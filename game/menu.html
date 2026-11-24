@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dustbound · Mini Robot Vacuum</title>
+  <link rel="stylesheet" href="game.css">
+</head>
+<body>
+  <main class="sheet" id="menu">
+    <header class="mast">
+      <span class="brand"><span class="stamp" aria-hidden="true"></span> Mini Robot Vacuum</span>
+      <button class="tool sound" id="menu-sound" type="button" aria-pressed="true">Sound on</button>
+    </header>
+    <div class="cover">
+      <figure class="plate">
+        <canvas id="preview-canvas" role="img" aria-label="Location preview"></canvas>
+        <figcaption>
+          <div class="plate-label">
+            <span class="label" id="plate-index">Plate 001 / 158</span>
+            <strong id="plate-name">Loading scene…</strong>
+            <span id="plate-style"></span>
+          </div>
+          <div class="pair">
+            <button type="button" class="arrow" id="prev-design" aria-label="Previous design">←</button>
+            <button type="button" class="arrow" id="next-design" aria-label="Next design">→</button>
+          </div>
+        </figcaption>
+      </figure>
+      <section class="entry" aria-labelledby="cover-title">
+        <div class="entry-intro">
+          <p class="edition"><span aria-hidden="true"></span> 30-level campaign</p>
+          <h1 id="cover-title">Dustbound</h1>
+          <p class="intro">Pick a tile for your cleaner to inspect. Clear the last dust patch and the next location opens.</p>
+        </div>
+        <div class="setup">
+          <div class="setup-pair"><div><label for="character-choice">Your cleaner</label>
+          <select id="character-choice"></select></div>
+          <div><label for="map-size">Map size</label>
+          <select id="map-size" aria-describedby="size-hint">
+            <option value="random">Random each level</option>
+            <option value="5">5 × 5</option>
+            <option value="10">10 × 10</option>
+            <option value="20">20 × 20</option>
+            <option value="50">50 × 50</option>
+            <option value="100">100 × 100</option>
+          </select>
+          </div></div>
+          <label for="first-location">Starting location</label>
+          <select id="first-location"></select>
+          <p class="hint" id="size-hint">A new location and map size are drawn each level.</p>
+          <label for="sensor-mode">Inspection mode</label>
+          <select id="sensor-mode" aria-describedby="sensor-hint">
+            <option value="verified">Verified inspection</option>
+            <option value="simulated">Noisy course sensor</option>
+            <option value="positive">Classroom demo · positive reading</option>
+            <option value="negative">Classroom demo · negative reading</option>
+          </select>
+          <p class="hint" id="sensor-hint">The sensor reads each tile accurately. The notebook shows how the robot decides.</p>
+          <button type="button" class="primary" id="start-run">Start campaign <span aria-hidden="true">→</span></button>
+          <button type="button" class="secondary" id="continue-run" hidden>Continue campaign</button>
+        </div>
+      </section>
+    </div>
+  </main>
+  <main class="sheet" id="play" hidden>
+    <header class="mast">
+      <span class="brand"><span class="stamp" aria-hidden="true"></span> Dustbound</span>
+      <div class="tools">
+        <button class="tool sound" id="play-sound" type="button" aria-pressed="true">Sound on</button>
+        <button class="tool" id="pause-game" type="button"><span class="pause-icon" aria-hidden="true"></span> Pause</button>
+      </div>
+    </header>
+    <header class="stage-head">
+      <div class="level" aria-label="Campaign level"><span class="label">Level</span><div><b id="level-number">01</b> <span>/ 30</span></div></div>
+      <div class="scene-name"><h1 id="stage-title">Location</h1><p id="stage-description"></p></div>
+      <div class="dirt-meter" aria-live="polite" aria-atomic="true">
+        <div class="dirt-meter-header"><span class="label">Dust patches left</span><span class="dirt-count"><b id="dirt-remaining">0</b><span> / </span><span id="dirt-total">0</span></span></div>
+        <progress id="clean-progress" value="0" max="1" aria-label="Dust patches removed"></progress>
+      </div>
+    </header>
+    <div class="play-layout">
+      <div class="field">
+        <div class="map-wrap">
+          <canvas id="game-canvas" tabindex="0" aria-describedby="map-directions" aria-label="Interactive cleaning map"></canvas>
+          <div id="robot-bubble" class="robot-bubble" role="status" aria-live="polite" hidden><small id="bubble-label"></small><b id="bubble-title"></b><span id="bubble-math"></span></div>
+          <div class="arrival" id="arrival" hidden><span class="label" id="arrival-kicker">Level complete</span><strong id="arrival-title"></strong><span id="arrival-note"></span></div>
+        </div>
+        <div class="map-foot">
+          <span id="character-name"></span><span id="map-directions">Select a floor tile to inspect it.</span>
+          <button class="tool" type="button" id="open-map" aria-haspopup="dialog">Floor plan</button>
+          <label class="pace" for="speed">Speed
+            <select id="speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option><option value="16">16×</option></select>
+          </label>
+        </div>
+      </div>
+      <aside class="ledger">
+        <div class="readout"><span class="label">Current task</span><strong id="task"></strong><span id="task-detail"></span></div>
+        <dl class="stats">
+          <div><dt>Inspections</dt><dd id="checked"></dd></div>
+          <div><dt>Moves</dt><dd id="moves"></dd></div>
+          <div><dt>Campaign score</dt><dd id="score"></dd></div>
+        </dl>
+        <div class="live-mode"><label class="mode-label" for="live-sensor-mode">Inspection mode</label>
+        <select id="live-sensor-mode" aria-describedby="live-sensor-hint"></select>
+        <p class="hint" id="live-sensor-hint"></p></div>
+        <details id="inspection"><summary>Agent notebook</summary>
+          <section class="note"><h2>Shortest route · BFS</h2><p id="path-note"></p></section>
+          <section class="note"><h2>Sensor · Bayes</h2><p id="bayes-note"></p></section>
+          <section class="note"><h2>One-step decision · MDP</h2><p id="policy-note"></p></section>
+          <section class="note"><h2>Recent events</h2><ol id="journal"></ol></section>
+        </details>
+      </aside>
+    </div>
+    <button class="primary end-btn" id="finish-menu" type="button" hidden>Return to menu <span aria-hidden="true">→</span></button>
+  </main>
+  <dialog id="floor-dialog" aria-labelledby="floor-title">
+    <header class="plan-head"><div><span class="label" id="floor-place"></span><h2 id="floor-title">Floor plan</h2></div>
+      <button type="button" class="tool" id="close-map">Close</button></header>
+    <div class="plan-layout">
+      <div><canvas id="plan-canvas" role="img" aria-label="Full floor plan. Use the coordinates alongside to select a tile."></canvas>
+        <div class="plan-key"><span class="key-dust">Dust</span><span class="key-wall">Obstacle</span><span class="key-robot">Cleaner</span></div></div>
+      <form id="plan-form">
+        <p id="plan-help">Tap the plan or choose a tile by its coordinates.</p>
+        <div class="coord-pair">
+          <label>Row<input type="number" id="plan-row" min="0" step="1" inputmode="numeric" required></label>
+          <label>Column<input type="number" id="plan-col" min="0" step="1" inputmode="numeric" required></label>
+        </div>
+        <output id="plan-cell" aria-live="polite"></output>
+        <button type="submit" class="primary" id="inspect-coordinate">Inspect tile <span aria-hidden="true">→</span></button>
+        <label class="mode-label" for="plan-patches">Locate a dust patch</label>
+        <select id="plan-patches"></select>
+      </form>
+    </div>
+  </dialog>
+  <dialog id="pause-dialog" aria-labelledby="pause-title">
+    <span class="edition" id="pause-level">Level 01</span>
+    <h2 id="pause-title">Paused</h2>
+    <p id="pause-line"></p>
+    <div class="dialog-actions">
+      <button class="primary" id="resume-game" type="button" autofocus>Resume <span aria-hidden="true">▶</span></button>
+      <button class="secondary sound" id="pause-sound" type="button" aria-pressed="true">Sound on</button>
+      <button class="secondary" id="restart-level" type="button">Restart this level</button>
+      <button class="secondary" id="to-menu" type="button">Back to menu</button>
+    </div>
+  </dialog>
+  <dialog id="new-dialog" aria-labelledby="new-title">
+    <h2 id="new-title">Start over?</h2>
+    <p>Your current campaign will be replaced by a fresh set of maps.</p>
+    <div class="dialog-actions">
+      <button class="primary" id="confirm-new" type="button">Start new campaign <span aria-hidden="true">→</span></button>
+      <button class="secondary" id="cancel-new" type="button" autofocus>Keep current run</button>
+    </div>
+  </dialog>
+  <script src="locations.js"></script>
+  <script src="engine.js"></script>
+  <script src="location-props.js"></script>
+  <script src="art.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>

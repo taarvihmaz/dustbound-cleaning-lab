@@ -1,0 +1,9 @@
+.git/
+.vercel/
+.venv/
+.pytest_cache/
+__pycache__/
+dist/
+node_modules/
+.DS_Store
+.env*

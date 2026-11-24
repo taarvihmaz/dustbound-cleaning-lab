@@ -1,0 +1,162 @@
+TAP version 13
+# Subtest: Bayes applies each likelihood and its complement
+ok 1 - Bayes applies each likelihood and its complement
+  ---
+  duration_ms: 0.536375
+  type: 'test'
+  ...
+# Subtest: both one-step utilities use the posterior and all four real transitions use pre-action truth
+ok 2 - both one-step utilities use the posterior and all four real transitions use pre-action truth
+  ---
+  duration_ms: 0.380708
+  type: 'test'
+  ...
+# Subtest: BFS returns the shortest four-neighbour detour and rejects unreachable cells
+ok 3 - BFS returns the shortest four-neighbour detour and rejects unreachable cells
+  ---
+  duration_ms: 0.146917
+  type: 'test'
+  ...
+# Subtest: only a player's click dispatches the robot; an empty tile never becomes dirty
+ok 4 - only a player's click dispatches the robot; an empty tile never becomes dirty
+  ---
+  duration_ms: 1.5385
+  type: 'test'
+  ...
+# Subtest: classroom simulation exposes all four truth/signal cases and keeps separate observable stages
+ok 5 - classroom simulation exposes all four truth/signal cases and keeps separate observable stages
+  ---
+  duration_ms: 0.374125
+  type: 'test'
+  ...
+# Subtest: pause freezes selection, motion, every explanation and inter-level transitions
+ok 6 - pause freezes selection, motion, every explanation and inter-level transitions
+  ---
+  duration_ms: 1.216334
+  type: 'test'
+  ...
+# Subtest: forced observations leave physical truth alone, the sensor can be switched and skips do not pass a level
+ok 7 - forced observations leave physical truth alone, the sensor can be switched and skips do not pass a level
+  ---
+  duration_ms: 0.430042
+  type: 'test'
+  ...
+# Subtest: restart replays physical state, choices, reward, sensor stream and random level draw
+ok 8 - restart replays physical state, choices, reward, sensor stream and random level draw
+  ---
+  duration_ms: 5.541916
+  type: 'test'
+  ...
+# Subtest: invalid menu choices are rejected; fixed avatars leave the simulation reproducible
+ok 9 - invalid menu choices are rejected; fixed avatars leave the simulation reproducible
+  ---
+  duration_ms: 0.646875
+  type: 'test'
+  ...
+# Subtest: all sizes start with actual reachable patches, a clear spawn and nearby dirt
+ok 10 - all sizes start with actual reachable patches, a clear spawn and nearby dirt
+  ---
+  duration_ms: 37.005375
+  type: 'test'
+  ...
+# Subtest: 158 compact plans are reachable and geometrically unique, even under rotation or reflection
+ok 11 - 158 compact plans are reachable and geometrically unique, even under rotation or reflection
+  ---
+  duration_ms: 3.639083
+  type: 'test'
+  ...
+# Subtest: the player must physically clean every level of a 30-level 5 campaign
+ok 12 - the player must physically clean every level of a 30-level 5 campaign
+  ---
+  duration_ms: 2.080334
+  type: 'test'
+  ...
+# Subtest: the player must physically clean every level of a 30-level 10 campaign
+ok 13 - the player must physically clean every level of a 30-level 10 campaign
+  ---
+  duration_ms: 3.953334
+  type: 'test'
+  ...
+# Subtest: the player must physically clean every level of a 30-level 20 campaign
+ok 14 - the player must physically clean every level of a 30-level 20 campaign
+  ---
+  duration_ms: 7.253375
+  type: 'test'
+  ...
+# Subtest: the player must physically clean every level of a 30-level 50 campaign
+ok 15 - the player must physically clean every level of a 30-level 50 campaign
+  ---
+  duration_ms: 31.368708
+  type: 'test'
+  ...
+# Subtest: the player must physically clean every level of a 30-level 100 campaign
+ok 16 - the player must physically clean every level of a 30-level 100 campaign
+  ---
+  duration_ms: 106.8385
+  type: 'test'
+  ...
+# Subtest: the player must physically clean every level of a 30-level random campaign
+ok 17 - the player must physically clean every level of a 30-level random campaign
+  ---
+  duration_ms: 33.155667
+  type: 'test'
+  ...
+# Subtest: 158 authored places have unique names, layouts and obstacle ensembles
+ok 18 - 158 authored places have unique names, layouts and obstacle ensembles
+  ---
+  duration_ms: 4.254167
+  type: 'test'
+  ...
+# Subtest: each place uses one of four drawn media and a complete local illustration palette
+ok 19 - each place uses one of four drawn media and a complete local illustration palette
+  ---
+  duration_ms: 1.095666
+  type: 'test'
+  ...
+# Subtest: every 5×5 place has connected paths, distinct walls and fixtures matching collision cells
+ok 20 - every 5×5 place has connected paths, distinct walls and fixtures matching collision cells
+  ---
+  duration_ms: 2.117792
+  type: 'test'
+  ...
+# Subtest: every 10×10 place has connected paths, distinct walls and fixtures matching collision cells
+ok 21 - every 10×10 place has connected paths, distinct walls and fixtures matching collision cells
+  ---
+  duration_ms: 3.975959
+  type: 'test'
+  ...
+# Subtest: every 20×20 place has connected paths, distinct walls and fixtures matching collision cells
+ok 22 - every 20×20 place has connected paths, distinct walls and fixtures matching collision cells
+  ---
+  duration_ms: 12.995125
+  type: 'test'
+  ...
+# Subtest: every 50×50 place has connected paths, distinct walls and fixtures matching collision cells
+ok 23 - every 50×50 place has connected paths, distinct walls and fixtures matching collision cells
+  ---
+  duration_ms: 60.565334
+  type: 'test'
+  ...
+# Subtest: every 100×100 place has connected paths, distinct walls and fixtures matching collision cells
+ok 24 - every 100×100 place has connected paths, distinct walls and fixtures matching collision cells
+  ---
+  duration_ms: 210.955083
+  type: 'test'
+  ...
+# Subtest: the noisy sensor follows the two expected rates over 2,000 seeded inspections
+ok 25 - the noisy sensor follows the two expected rates over 2,000 seeded inspections
+  ---
+  duration_ms: 23.813583
+  type: 'test'
+  ...
+# Dirty: 793 positive and 207 negative out of 1000.
+# Clean: 180 positive and 820 negative out of 1000.
+1..25
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 351.568459

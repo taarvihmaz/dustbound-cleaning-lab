@@ -1,0 +1,28 @@
+
+Positive episode
+BFS: 8 moves
+Move to (1, 0)
+Move to (2, 0)
+Move to (2, 1)
+Move to (2, 2)
+Move to (2, 3)
+Move to (2, 4)
+Move to (1, 4)
+Move to (0, 4)
+Bayes: positive; posterior=0.6315789
+Decision: Clean; Q(Clean)=4.8421053; Q(Move On)=-4.3157895
+Environment: Dirty -> Clean; realized reward=10
+
+Negative episode
+BFS: 8 moves
+Move to (1, 0)
+Move to (2, 0)
+Move to (2, 1)
+Move to (2, 2)
+Move to (2, 3)
+Move to (2, 4)
+Move to (1, 4)
+Move to (0, 4)
+Bayes: negative; posterior=0.0967742
+Decision: Move On; Q(Clean)=-2.6451613; Q(Move On)=1.0322581
+Environment: Dirty -> Dirty; realized reward=-8

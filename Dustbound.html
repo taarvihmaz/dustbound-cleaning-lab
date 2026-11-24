@@ -1,0 +1,2725 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dustbound · Mini Robot Vacuum</title>
+  <style>
+:root {
+  color-scheme: light;
+  --ink: #26342c;
+  --paper: #faf5e7;
+  --page: #eee8d6;
+  --rule: #abae96;
+  --quiet: #536151;
+  --orange: #a73b1e;
+  --serif: "Hedvig Letters Serif", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --sans: "Instrument Sans", "Avenir Next", Avenir, "Segoe UI", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+html { min-width: 0; background: var(--page) }
+body { margin: 0; color: var(--ink); font-family: var(--sans); -webkit-text-size-adjust: 100% }
+button, select { font: inherit; color: inherit }
+button, select, summary { cursor: pointer; touch-action: manipulation }
+button:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid #b85c25; outline-offset: 3px }
+button:disabled { cursor: default; opacity: .55 }
+button { border-radius: 0; -webkit-appearance: none }
+.sheet { width: min(1120px, calc(100% - clamp(24px, 7vw, 96px))); margin: 0 auto 18px }
+.mast { min-height: 61px; display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 2px solid var(--ink) }
+.brand { font-family: var(--serif); font-size: 18px; font-weight: 700; letter-spacing: -.045em; display: inline-flex; gap: 10px; align-items: center }
+.stamp { width: 21px; height: 21px; position: relative; display: inline-block; transform: rotate(-8deg); border: 2px solid var(--ink); border-radius: 50% 50% 38% 39%; background: var(--ink) }
+.stamp::before { content: ""; position: absolute; top: 3px; left: 3px; right: 3px; height: 4px; border-top: 2px solid var(--page); border-radius: 50% }
+.stamp::after { content: ""; position: absolute; background: var(--page); width: 3px; height: 3px; border-radius: 50%; left: 5px; top: 9px; box-shadow: 6px 0 var(--page) }
+.tools, .pair { display: flex; align-items: center; gap: 6px }
+.tool, .arrow { background: transparent; border: 1px solid var(--rule); display: inline-flex; justify-content: center; align-items: center; min-height: 36px; gap: 8px; padding: 5px 12px; font: 600 13px var(--sans) }
+.tool:hover, .arrow:hover, .secondary:hover { background: #e2dfc9; border-color: var(--ink) }
+.sound::before { content: ""; width: 13px; height: 13px; background: currentColor; clip-path: polygon(0 36%, 31% 36%, 72% 5%, 72% 95%, 31% 65%, 0 65%) }
+.sound[aria-pressed="false"]::before { opacity: .56 }
+.pause-icon { width: 9px; height: 10px; border-inline: 3px solid currentColor }
+.cover { display: grid; grid-template-columns: 1.12fr 1fr; margin-top: clamp(20px, 4vw, 48px); border: 1px solid var(--ink); background: var(--paper); box-shadow: 3px 4px 0 #c1c1a8 }
+.plate { margin: 0; display: flex; min-width: 0; flex-direction: column; border-right: 1px solid var(--ink) }
+.plate canvas { display: block; width: 100%; min-height: 0; height: clamp(320px, 39vw, 470px); background: #bccbb3; flex: 1 1 auto }
+.plate figcaption { border-top: 1px solid var(--ink); padding: 12px 18px; min-height: 74px; display: flex; gap: 10px; align-items: center; justify-content: space-between; background: #e5e4cf }
+.plate-label { min-width: 0; display: grid; grid-template-columns: auto 1fr; align-items: baseline; column-gap: 10px; row-gap: 3px }
+.label, .edition { font: 600 10px/1.5 var(--mono); letter-spacing: .105em; text-transform: uppercase }
+.plate-label .label { grid-column: 1 / -1; color: var(--quiet) }
+.plate-label strong { font: bold 19px/1.12 var(--serif); letter-spacing: -.035em }
+#plate-style { font: 12px/1.35 var(--sans); color: var(--quiet) }
+.arrow { width: 34px; min-height: 34px; font-size: 18px; padding: 0; border-color: #9fa78e }
+.entry { padding: clamp(25px, 4vw, 54px); align-self: center; min-width: 0 }
+.edition { margin: 0 0 14px; color: var(--orange); display: flex; align-items: center; gap: 9px }
+.edition span { width: 24px; height: 3px; background: var(--orange) }
+h1, h2, figure, dl { margin: 0 }
+.entry h1 { font: 700 clamp(52px, 6.8vw, 88px)/.95 var(--serif); letter-spacing: -.085em; margin-left: -.055em; color: #24372a }
+.intro { font: 17px/1.55 var(--serif); margin: 21px 0 0; max-width: 34ch }
+.setup { margin-top: clamp(22px, 3.6vw, 43px); border-top: 1px solid var(--rule); padding-top: 17px }
+.setup label { display: block; font: 650 13px var(--sans); margin-bottom: 8px }
+select { border-radius: 0; border: 1px solid #868f79; background: var(--paper); padding: 9px 12px; min-height: 40px }
+.setup select { width: 100%; font-size: 15px }
+.hint { margin: 7px 0 17px; font-size: 12px; line-height: 1.5; color: var(--quiet); min-height: 18px }
+.primary, .secondary { min-height: 44px; width: 100%; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--ink); padding: 10px 14px; font: 650 15px var(--sans); text-align: left }
+.primary { color: #fff9e8; border-color: #8a391e; background: var(--orange) }
+.primary:hover { background: #853115 }
+.primary span { font-family: system-ui, sans-serif; font-size: 18px; line-height: 1 }
+.secondary { background: transparent; border-color: var(--rule) }
+.setup .secondary { margin-top: 6px }
+.stage-head { display: flex; align-items: center; gap: 18px; margin: clamp(18px, 3vw, 31px) 0 18px }
+.level { flex: 0 0 auto; border-right: 1px solid var(--rule); padding-right: 18px }
+.level .label { color: var(--orange) }
+.level b { font: bold 30px/1 var(--serif); letter-spacing: -.045em }
+.level div span { color: var(--quiet); font: 11px var(--mono) }
+.scene-name { min-width: 0 }
+.scene-name h1 { font: bold clamp(27px, 3.8vw, 44px)/1 var(--serif); letter-spacing: -.06em; overflow-wrap: anywhere }
+.scene-name p { margin: 5px 0 0; color: var(--quiet); font-size: 13px }
+.play-layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(218px, 1fr); border: 1px solid var(--ink); background: var(--paper); align-items: start }
+.field { min-width: 0; border-right: 1px solid var(--ink) }
+.map-wrap { position: relative; width: 100%; background: #b2bca5 }
+#game-canvas { display: block; width: 100%; height: clamp(300px, 41vw, 490px) }
+.map-foot { min-height: 49px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--ink); padding: 6px 14px; background: #e5e4cf }
+#character-name { font: 600 14px var(--serif) }
+.pace { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--quiet) }
+.pace select { min-height: 32px; padding: 2px 3px; font: 12px var(--mono) }
+.ledger { padding: 20px 16px; min-width: 0 }
+.readout { display: flex; flex-direction: column; min-height: 100px }
+.readout .label { color: var(--orange) }
+.readout strong { margin: 5px 0; font: bold 24px/1.1 var(--serif); letter-spacing: -.04em }
+#task-detail, .note p, .note li { font-size: 12px; line-height: 1.55; color: var(--quiet) }
+.stats { border-top: 1px solid var(--rule); margin: 10px 0 }
+.stats div { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; padding: 8px 0; border-bottom: 1px solid #ccceb9 }
+.stats dt { font-size: 13px }
+.stats dd { margin: 0; font: bold 13px var(--mono); text-align: right }
+details { margin-top: 12px }
+summary { font: 600 14px var(--serif); padding: 6px 0 }
+.note { padding: 8px 0; border-top: 1px dotted #a5aa94 }
+.note h2 { font: 650 12px var(--sans); margin: 0 0 4px }
+.note p { margin: 0; white-space: pre-line; overflow-wrap: anywhere }
+.note ol { padding-left: 1.35em; margin: 0 }
+.note li + li { margin-top: 3px }
+.arrival { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--paper); border: 1px solid var(--ink); padding: 16px 22px; box-shadow: 3px 3px 0 #455246; display: grid; gap: 3px; text-align: center; width: max-content; max-width: 92% }
+.arrival .label { color: var(--orange) }
+.arrival strong { font: bold 27px var(--serif); letter-spacing: -.04em }
+#arrival-note { color: var(--quiet); font-size: 13px }
+.end-btn { margin: 12px 0 0 auto; width: auto; gap: 24px }
+dialog { color: var(--ink); background: var(--paper); border: 1px solid var(--ink); width: min(340px, calc(100% - 34px)); padding: 26px; box-shadow: 4px 5px 0 #424f43 }
+dialog::backdrop { background: rgb(33 49 39 / .48) }
+dialog .edition { margin-bottom: 6px }
+dialog h2 { font: bold 41px/1.1 var(--serif); letter-spacing: -.06em }
+dialog p { margin: 10px 0 21px; font-size: 14px; line-height: 1.5; color: var(--quiet) }
+.dialog-actions { display: grid; gap: 6px }
+@media (max-width: 830px) {
+  .sheet { width: calc(100% - 28px) }
+  .cover { grid-template-columns: 1fr 1fr; margin-top: 18px }
+  .entry { padding: 25px 22px }
+  .plate-label { display: flex; align-items: start; flex-direction: column; gap: 1px }
+  .plate figcaption { padding: 10px 12px }
+  .play-layout { grid-template-columns: minmax(0, 1fr) 208px }
+  .ledger { padding: 15px 12px }
+}
+@media (max-width: 620px) {
+  .mast { min-height: 50px }
+  .cover { grid-template-columns: 1fr; margin-top: 12px }
+  .plate { border: 0; border-bottom: 1px solid var(--ink) }
+  .plate canvas { height: clamp(155px, 41vw, 225px); flex: none }
+  .plate figcaption { min-height: 50px; padding: 5px 12px }
+  .plate-label { display: grid; grid-template-columns: auto 1fr; align-items: baseline; column-gap: 8px; row-gap: 0 }
+  .plate-label strong { font-size: 17px }
+  .entry { padding: 19px 17px }
+  .edition { margin: 0 0 8px }
+  .entry h1 { font-size: clamp(48px, 10vw, 62px) }
+  .intro { margin-top: 10px; font-size: 15px; max-width: none; line-height: 1.42 }
+  .setup { margin-top: 14px; padding-top: 12px }
+  .hint { margin-bottom: 12px }
+  .stage-head { gap: 12px; margin: 15px 0 10px }
+  .level { padding-right: 12px }
+  .level b { font-size: 25px }
+  .play-layout { grid-template-columns: 1fr }
+  .field { border: 0; border-bottom: 1px solid var(--ink) }
+  #game-canvas { height: clamp(242px, 75vw, 345px) }
+  .ledger { padding: 11px 12px; display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 8px 14px }
+  .readout { min-height: 0 }
+  .readout strong { font-size: 20px }
+  .stats { margin: 0 }
+  .stats div { padding: 4px 0 }
+  details { grid-column: 1 / -1; margin: 0 }
+  .map-foot { min-height: 41px }
+}
+@media (prefers-reduced-motion: no-preference) {
+  button, summary { transition: background-color 100ms ease-out }
+}
+
+.setup-pair {display:grid;grid-template-columns:1.35fr 1fr;gap:12px;margin-bottom:12px}
+.setup-pair > div {min-width:0}
+.setup select {max-width:100%;text-overflow:ellipsis}
+.setup {margin-top:20px}
+.mode-label {display:block;font:650 12px var(--sans);margin:0 0 6px}
+.live-mode {margin:17px 0 10px}
+.live-mode select, #plan-patches {width:100%;min-width:0;font-size:13px}
+.live-mode .hint {margin:6px 0;min-height:0}
+.dirt-meter {margin-left:auto;min-width:145px;max-width:210px}
+.dirt-meter-header {display:flex;justify-content:space-between;align-items:center;gap:12px}
+.dirt-meter .label {max-width:8ch;color:var(--quiet);line-height:1.2}
+.dirt-count {white-space:nowrap;color:var(--quiet);font:13px var(--mono)}
+.dirt-count b {color:var(--ink);font:700 32px/.95 var(--serif);letter-spacing:-.045em}
+#clean-progress {display:block;width:100%;height:4px;margin-top:7px;border:0;background:#cbcbb5;color:#547754;appearance:none}
+#clean-progress::-webkit-progress-bar {background:#cbcbb5}
+#clean-progress::-webkit-progress-value {background:#547754}
+#clean-progress::-moz-progress-bar {background:#547754}
+#open-map {white-space:nowrap;background:var(--paper);min-height:33px}
+#open-map::before {content:"";width:11px;height:11px;border:1px solid currentColor;background:linear-gradient(to right,transparent 42%,currentColor 42% 54%,transparent 54%),linear-gradient(to bottom,transparent 43%,currentColor 43% 54%,transparent 54%);opacity:.8}
+#floor-dialog {width:min(700px,calc(100% - 24px));max-height:calc(100dvh - 24px);padding:clamp(15px,3vw,26px);overflow:auto}
+.plan-head {display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px}
+.plan-head h2 {margin:3px 0 0;font-size:clamp(27px,5vw,39px)}
+.plan-head .label {color:var(--quiet)}
+.plan-layout {display:grid;grid-template-columns:minmax(180px,1.35fr) minmax(180px,1fr);gap:clamp(12px,3vw,24px)}
+#plan-canvas {display:block;width:100%;aspect-ratio:1;outline:1px solid var(--rule);background:#f1e9d2;cursor:crosshair}
+.plan-key {display:flex;justify-content:space-between;gap:8px;margin-top:7px;font:12px var(--sans);color:var(--quiet)}
+.plan-key span {display:inline-flex;gap:7px;align-items:center}
+.plan-key span:before {content:"";width:9px;height:9px;display:inline-block}
+.key-dust:before {background:#a3421a;transform:rotate(45deg) scale(.77)}
+.key-wall:before {background:#747e67}
+.key-robot:before {border:2px solid #175762;border-radius:50%;box-sizing:border-box}
+#plan-form {min-width:0}
+#plan-help {margin:0 0 14px}
+.coord-pair {display:flex;gap:9px}
+.coord-pair label {flex:1;min-width:0;font:600 13px var(--sans)}
+.coord-pair input {display:block;width:100%;margin-top:5px;min-height:38px;border:1px solid #868f79;border-radius:0;padding:7px 10px;background:var(--paper);color:var(--ink);font:14px var(--mono)}
+.coord-pair input:focus-visible {outline:3px solid #b85c25;outline-offset:2px}
+#plan-cell {display:block;min-height:40px;padding:8px 0 6px;font:12px/1.4 var(--mono);color:var(--quiet)}
+#plan-form .mode-label {margin-top:20px}
+#map-directions {font-size:12px;color:#415549;flex:1}
+#game-canvas {touch-action:manipulation;outline-offset:-3px}
+#game-canvas:focus-visible {outline:3px solid #bd7436}
+.robot-bubble {position:absolute;z-index:2;isolation:isolate;pointer-events:none;max-width:calc(100% - 10px);width:max-content;
+  display:grid;gap:2px;padding:8px 12px 9px;border:1.5px solid #344236;border-radius:9px;background:#fffcf2;color:#20342a;box-shadow:1px 3px 0 #273a2b40;
+  --pointer:50%;--cue:#38575a}
+.robot-bubble:after {content:"";position:absolute;left:var(--pointer);bottom:-6px;width:9px;height:9px;background:#fffcf2;
+  border-right:1.5px solid #344236;border-bottom:1.5px solid #344236;transform:translateX(-50%) rotate(45deg)}
+.robot-bubble.below:after {top:-6px;bottom:auto;transform:translateX(-50%) rotate(225deg)}
+.robot-bubble[data-tone=clean]{--cue:#136139}
+.robot-bubble[data-tone=skip]{--cue:#b32525}
+.robot-bubble small {font:650 10px var(--mono);text-transform:uppercase;letter-spacing:.05em;color:#536151}
+.robot-bubble b {font:700 18px/1.15 var(--serif);color:var(--cue)}
+.robot-bubble span {font:12px/1.5 var(--mono);white-space:pre-line}
+.robot-bubble span:empty {display:none}
+@media(max-width:620px){.robot-bubble{padding:5px 8px}.robot-bubble b{font-size:16px}.robot-bubble span{font-size:11px}}
+@media(max-width:620px){
+  .stage-head {flex-wrap:wrap}
+  .scene-name {flex:1 1 62%}
+  .dirt-meter {display:flex;align-items:center;gap:12px;margin:0;min-width:100%}
+  .dirt-meter-header {gap:9px;flex-shrink:0}
+  .dirt-meter .label {max-width:none}
+  .dirt-count b {font-size:20px}
+  #clean-progress {margin:0;width:auto;flex:1}
+  .map-foot {display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"character overview" "directions speed";gap:5px 10px;padding:7px 12px}
+  #character-name {grid-area:character}
+  #open-map {grid-area:overview}
+  .pace {grid-area:speed;justify-self:end}
+  .live-mode {grid-column:1/-1;margin:2px 0;max-width:100%}
+  #map-directions {display:block;grid-area:directions;line-height:1.3}
+}
+@media(max-width:500px){
+  .plan-layout {grid-template-columns:1fr}
+  #plan-canvas, .plan-key {max-width:min(100%,37dvh);margin-inline:auto}
+  .plan-head {margin-bottom:10px}
+  #plan-help {margin-bottom:8px}
+  #plan-form .mode-label {margin-top:12px}
+}
+
+</style>
+</head>
+<body>
+  <main class="sheet" id="menu">
+    <header class="mast">
+      <span class="brand"><span class="stamp" aria-hidden="true"></span> Mini Robot Vacuum</span>
+      <button class="tool sound" id="menu-sound" type="button" aria-pressed="true">Sound on</button>
+    </header>
+    <div class="cover">
+      <figure class="plate">
+        <canvas id="preview-canvas" role="img" aria-label="Location preview"></canvas>
+        <figcaption>
+          <div class="plate-label">
+            <span class="label" id="plate-index">Plate 001 / 158</span>
+            <strong id="plate-name">Loading scene…</strong>
+            <span id="plate-style"></span>
+          </div>
+          <div class="pair">
+            <button type="button" class="arrow" id="prev-design" aria-label="Previous design">←</button>
+            <button type="button" class="arrow" id="next-design" aria-label="Next design">→</button>
+          </div>
+        </figcaption>
+      </figure>
+      <section class="entry" aria-labelledby="cover-title">
+        <div class="entry-intro">
+          <p class="edition"><span aria-hidden="true"></span> 30-level campaign</p>
+          <h1 id="cover-title">Dustbound</h1>
+          <p class="intro">Pick a tile for your cleaner to inspect. Clear the last dust patch and the next location opens.</p>
+        </div>
+        <div class="setup">
+          <div class="setup-pair"><div><label for="character-choice">Your cleaner</label>
+          <select id="character-choice"></select></div>
+          <div><label for="map-size">Map size</label>
+          <select id="map-size" aria-describedby="size-hint">
+            <option value="random">Random each level</option>
+            <option value="5">5 × 5</option>
+            <option value="10">10 × 10</option>
+            <option value="20">20 × 20</option>
+            <option value="50">50 × 50</option>
+            <option value="100">100 × 100</option>
+          </select>
+          </div></div>
+          <label for="first-location">Starting location</label>
+          <select id="first-location"></select>
+          <p class="hint" id="size-hint">A new location and map size are drawn each level.</p>
+          <label for="sensor-mode">Inspection mode</label>
+          <select id="sensor-mode" aria-describedby="sensor-hint">
+            <option value="verified">Verified inspection</option>
+            <option value="simulated">Noisy course sensor</option>
+            <option value="positive">Classroom demo · positive reading</option>
+            <option value="negative">Classroom demo · negative reading</option>
+          </select>
+          <p class="hint" id="sensor-hint">The sensor reads each tile accurately. The notebook shows how the robot decides.</p>
+          <button type="button" class="primary" id="start-run">Start campaign <span aria-hidden="true">→</span></button>
+          <button type="button" class="secondary" id="continue-run" hidden>Continue campaign</button>
+        </div>
+      </section>
+    </div>
+  </main>
+  <main class="sheet" id="play" hidden>
+    <header class="mast">
+      <span class="brand"><span class="stamp" aria-hidden="true"></span> Dustbound</span>
+      <div class="tools">
+        <button class="tool sound" id="play-sound" type="button" aria-pressed="true">Sound on</button>
+        <button class="tool" id="pause-game" type="button"><span class="pause-icon" aria-hidden="true"></span> Pause</button>
+      </div>
+    </header>
+    <header class="stage-head">
+      <div class="level" aria-label="Campaign level"><span class="label">Level</span><div><b id="level-number">01</b> <span>/ 30</span></div></div>
+      <div class="scene-name"><h1 id="stage-title">Location</h1><p id="stage-description"></p></div>
+      <div class="dirt-meter" aria-live="polite" aria-atomic="true">
+        <div class="dirt-meter-header"><span class="label">Dust patches left</span><span class="dirt-count"><b id="dirt-remaining">0</b><span> / </span><span id="dirt-total">0</span></span></div>
+        <progress id="clean-progress" value="0" max="1" aria-label="Dust patches removed"></progress>
+      </div>
+    </header>
+    <div class="play-layout">
+      <div class="field">
+        <div class="map-wrap">
+          <canvas id="game-canvas" tabindex="0" aria-describedby="map-directions" aria-label="Interactive cleaning map"></canvas>
+          <div id="robot-bubble" class="robot-bubble" role="status" aria-live="polite" hidden><small id="bubble-label"></small><b id="bubble-title"></b><span id="bubble-math"></span></div>
+          <div class="arrival" id="arrival" hidden><span class="label" id="arrival-kicker">Level complete</span><strong id="arrival-title"></strong><span id="arrival-note"></span></div>
+        </div>
+        <div class="map-foot">
+          <span id="character-name"></span><span id="map-directions">Select a floor tile to inspect it.</span>
+          <button class="tool" type="button" id="open-map" aria-haspopup="dialog">Floor plan</button>
+          <label class="pace" for="speed">Speed
+            <select id="speed"><option value="1">1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option><option value="16">16×</option></select>
+          </label>
+        </div>
+      </div>
+      <aside class="ledger">
+        <div class="readout"><span class="label">Current task</span><strong id="task"></strong><span id="task-detail"></span></div>
+        <dl class="stats">
+          <div><dt>Inspections</dt><dd id="checked"></dd></div>
+          <div><dt>Moves</dt><dd id="moves"></dd></div>
+          <div><dt>Campaign score</dt><dd id="score"></dd></div>
+        </dl>
+        <div class="live-mode"><label class="mode-label" for="live-sensor-mode">Inspection mode</label>
+        <select id="live-sensor-mode" aria-describedby="live-sensor-hint"></select>
+        <p class="hint" id="live-sensor-hint"></p></div>
+        <details id="inspection"><summary>Agent notebook</summary>
+          <section class="note"><h2>Shortest route · BFS</h2><p id="path-note"></p></section>
+          <section class="note"><h2>Sensor · Bayes</h2><p id="bayes-note"></p></section>
+          <section class="note"><h2>One-step decision · MDP</h2><p id="policy-note"></p></section>
+          <section class="note"><h2>Recent events</h2><ol id="journal"></ol></section>
+        </details>
+      </aside>
+    </div>
+    <button class="primary end-btn" id="finish-menu" type="button" hidden>Return to menu <span aria-hidden="true">→</span></button>
+  </main>
+  <dialog id="floor-dialog" aria-labelledby="floor-title">
+    <header class="plan-head"><div><span class="label" id="floor-place"></span><h2 id="floor-title">Floor plan</h2></div>
+      <button type="button" class="tool" id="close-map">Close</button></header>
+    <div class="plan-layout">
+      <div><canvas id="plan-canvas" role="img" aria-label="Full floor plan. Use the coordinates alongside to select a tile."></canvas>
+        <div class="plan-key"><span class="key-dust">Dust</span><span class="key-wall">Obstacle</span><span class="key-robot">Cleaner</span></div></div>
+      <form id="plan-form">
+        <p id="plan-help">Tap the plan or choose a tile by its coordinates.</p>
+        <div class="coord-pair">
+          <label>Row<input type="number" id="plan-row" min="0" step="1" inputmode="numeric" required></label>
+          <label>Column<input type="number" id="plan-col" min="0" step="1" inputmode="numeric" required></label>
+        </div>
+        <output id="plan-cell" aria-live="polite"></output>
+        <button type="submit" class="primary" id="inspect-coordinate">Inspect tile <span aria-hidden="true">→</span></button>
+        <label class="mode-label" for="plan-patches">Locate a dust patch</label>
+        <select id="plan-patches"></select>
+      </form>
+    </div>
+  </dialog>
+  <dialog id="pause-dialog" aria-labelledby="pause-title">
+    <span class="edition" id="pause-level">Level 01</span>
+    <h2 id="pause-title">Paused</h2>
+    <p id="pause-line"></p>
+    <div class="dialog-actions">
+      <button class="primary" id="resume-game" type="button" autofocus>Resume <span aria-hidden="true">▶</span></button>
+      <button class="secondary sound" id="pause-sound" type="button" aria-pressed="true">Sound on</button>
+      <button class="secondary" id="restart-level" type="button">Restart this level</button>
+      <button class="secondary" id="to-menu" type="button">Back to menu</button>
+    </div>
+  </dialog>
+  <dialog id="new-dialog" aria-labelledby="new-title">
+    <h2 id="new-title">Start over?</h2>
+    <p>Your current campaign will be replaced by a fresh set of maps.</p>
+    <div class="dialog-actions">
+      <button class="primary" id="confirm-new" type="button">Start new campaign <span aria-hidden="true">→</span></button>
+      <button class="secondary" id="cancel-new" type="button" autofocus>Keep current run</button>
+    </div>
+  </dialog>
+  <script>
+/* The location book is the shared source for the map, collision rules and artwork.
+ * Each line describes one place. A..Y are cells of its hand-authored 5×5 plan:
+ * A B C D E / F G H I J / K L M N O / P Q R S T / U V W X Y.
+ * Each set of letters belongs to a named fixture. Bigger boards extend the plan
+ * into wings separated by walkways. They keep its characteristic arrangements.
+ */
+(function (root) {
+  "use strict";
+  const environments = {
+    stacks: ["interior",1,"deck","city","dust","cabin","b8d1c4 a5b59d 596f66 c59b68 293e3f fce8bd"],
+    salon: ["interior",1,"tile","city","dust","arch","9fc8c9 c39e87 995f50 dfb888 45333d ffebc0"],
+    glass: ["interior",1,"tile","hills","spores","arch","a9d6c8 93bb9e 387767 acc89c 244e4b fbf2bc"],
+    shop: ["urban",1,"brick","city","dust","station","b2cbd0 cea888 9e6c52 e2bd91 473b39 ffe6b8"],
+    street: ["urban",0,"stone","city","rain","tower","96bccd 91a9ae 576c78 c9b9a4 293f4e ffe0a1"],
+    plaza: ["urban",0,"tile","city","leaves","arch","a5d3cf 8dbdab 587e70 d9c59c 304d46 f9e2ac"],
+    rail: ["industrial",0,"iron","city","ash","gantry","adc6c2 b9ab8b 8d735c b8a48a 3b403d ffda96"],
+    works: ["industrial",1,"iron","city","ash","gantry","9fbfbd 9aac9f 587a75 c0aa8d 2e4850 ffda9c"],
+    foundry: ["industrial",1,"brick","spires","ash","kiln","b7c5b8 c29d84 9d6455 c59c7b 483747 ffc786"],
+    arena: ["urban",1,"tile","city","dust","arch","a6d2cd 8fb5a7 437f76 c6c78a 264e4d f7de8c"],
+    farm: ["woodland",0,"grass","hills","leaves","windmill","b1d9ca b7ca89 67916a c4c988 3d5b43 ffe4a3"],
+    forest: ["woodland",0,"moss","forest","leaves","cabin","b9d9c2 8fbe99 417d68 9ebc84 294c43 e9edb9"],
+    alpine: ["mountain",0,"slate","peaks","dust","station","91c8d6 94aec9 627fa0 b5b5a4 354457 fce6c5"],
+    ice: ["mountain",0,"ice","ice","snow","station","89d2dc 90c1d0 6085a2 c1dfda 2f5368 f9eab9"],
+    dune: ["desert",0,"sand","dunes","dust","station","a4cbd0 e5bb8f c68960 e5bd81 62403d ffe4ac"],
+    canyon: ["desert",0,"stone","mesa","dust","arch","99c5c4 d6ad87 b67458 dcb083 633f40 fce2ac"],
+    shore: ["coast",0,"shell","coast","foam","lighthouse","8dd1d0 81b9b9 548f98 e1cda9 395758 f8e5bd"],
+    pier: ["coast",0,"deck","coast","foam","gantry","88c4cb 8ab7bc 507e87 c6a17e 344b50 ffdfa7"],
+    wetland: ["water",0,"mud","marsh","fireflies","cabin","acd1bb 8fb98e 538974 b2bc88 36574a f3e3a7"],
+    canal: ["water",0,"stone","coast","rain","arch","93c6c6 8cb7b4 5c8991 c1bda1 344f55 f7dfae"],
+    cave: ["mountain",1,"slate","spires","spores","arch","adb8d0 9295af 6d6489 b2a1b1 363747 e9d4bb"],
+    stage: ["interior",1,"deck","city","stars","dome","c0bbc6 a395a9 795e81 c3a081 413447 f5d5aa"],
+    lab: ["interior",1,"tile","hills","dust","dome","a4d6d1 94bcb1 598c91 becabb 36565c f1ebbc"],
+  };
+
+  // Name | environment | route feature | three fixtures and their actual cells.
+  const book = `
+Lantern Library|stacks|Reading bays|shelf Book stacks@AFK|lamp Reading lamps@IS|table Folio desk@W
+Tidal Crab Hatchery|shore|Nursery pools|tank Hatchling tanks@BD|basket Shell baskets@MP|pump Seawater intake@X
+Corner Coffeehouse|salon|Counter aisle|table Café tables@GS|counter Espresso bar@BC|chair Bentwood chairs@P
+Quartz Minehead|cave|Shaft approach|cart Ore tubs@BL|crystal Quartz outcrop@OY|gantry Lift frame@Q
+Paper Mill Drying Loft|works|Drying lanes|rack Paper screens@BGQ|roll Paper reels@EO|vat Pulp tub@S
+Antenna Relay Ridge|alpine|Relay terraces|dish Receiver dishes@FM|tower Radio mast@D|case Tool cases@OX
+Aircraft Workshop|works|Wing clearance|plane Airframe@GH|bench Riveting bench@O|cart Tool trolley@UX
+Wisteria Pergola|forest|Arched garden walk|arch Vine trellises@FH|pot Wisteria tubs@OT|bench Garden seat@W
+Glassblower's Kiln|foundry|Annealing lane|kiln Glass furnace@FG|bottle Glass stock@DN|rack Cooling rack@X
+Sunken Bell Dock|pier|Salvage slips|bell Bronze bell@M|winch Salvage winches@BP|boat Diver launch@TY
+School Assembly Hall|stacks|Classroom corridor|locker Locker bank@AEJ|bench Hall benches@LU|sign Noticeboard@S
+Polar Weather Station|ice|Instrument court|sensor Weather mast@BH|dish Telemetry dish@OT|tent Instrument hut@V
+Puppet Makers' Attic|stage|Marionette aisles|puppet String puppets@EG|chest Costume trunks@KL|rack Backdrop rail@X
+Saffron Spice Bazaar|dune|Awning passages|stall Spice stalls@AF|jar Spice jars@NS|basket Pepper baskets@U
+Leadenhall Market|street|Covered arcade|stall Market canopies@AG|column Arcade columns@EJT|crate Produce cases@Q
+Volcanic Observatory|canyon|Crater stations|scope Survey telescope@L|rock Lava blocks@BI|antenna Telemetry aerial@WY
+Violin Repair Room|stacks|Luthier benches|violin Instrument stands@BN|bench Carving bench@KP|case Fiddle cases@X
+Night Ferry Terminal|pier|Boarding lanes|boat Ferry tender@CD|gate Boarding turnstiles@FL|seat Waiting seats@Y
+Hall of Mammals|salon|Specimen galleries|animal Mounted specimens@GIM|case Display cases@PT|column Gallery pier@A
+Almond Harvest Terrace|farm|Orchard terraces|tree Almond trees@ABR|ladder Picking ladder@J|basket Harvest baskets@U
+Meteorite Repository|lab|Stone galleries|rock Meteorites@ILP|plinth Sample stands@C|cabinet Sample cabinet@TY
+Old Canal Locks|canal|Lock gates|gate Lock gates@FK|wheel Gate wheels@DI|bollard Mooring posts@RW
+Indoor Climbing Gym|arena|Bouldering bays|climb Bouldering walls@ACE|mat Crash mats@NQ|ladder Rope ladder@U
+Signalman's Signal Box|rail|Lever banks|lever Signal levers@BCL|signal Semaphore@O|desk Diagram desk@V
+Fern Spore Nursery|glass|Propagation beds|fern Tree ferns@FLN|tray Seed flats@A|tank Misting tank@Y
+Snowcat Garage|ice|Vehicle bays|tractor Snowcat@GI|drum Fuel drums@CU|rack Track parts@T
+Freight Station|rail|Loading sidings|crate Freight crates@AHL|cart Platform trolleys@EX|signal Rail signal@P
+Mosaic Bathhouse|salon|Bath galleries|pool Tiled baths@BI|column Marble columns@KM|chair Bath stools@Y
+Hilltop Letterpress|shop|Printing lanes|press Printing press@BK|tray Type trays@NX|roll Ink rollers@E
+Cliff Lift Landing|alpine|Cable landing|gondola Cable cars@BH|winch Lift winding drum@KV|gate Lift barrier@J
+Painter's Studio|salon|Easel court|easel Studio easels@BGI|table Mixing table@Q|canvas Stretched canvases@Y
+Willow Canoe Landing|wetland|Launch channels|canoe Dugout canoes@FN|reed Willow reeds@CD|bollard Landing post@X
+Phonograph Archive|stacks|Listening booths|horn Listening horns@GI|cabinet Record cabinet@EF|seat Listening stool@U
+Copper Kettle Brewery|works|Fermentation aisle|vat Copper kettles@HL|drum Fermentation barrels@RT|pipe Cooling line@A
+Neighbourhood Cinema|stage|Screening rows|seat Cinema seats@BGRS|screen Projection screen@D|lamp Aisle lamp@P
+Limestone Fossil Cut|canyon|Excavation benches|fossil Fossil slab@FJ|rock Cut limestone@MXY|ladder Trench ladder@A
+Silk Weavers' Gallery|stacks|Loom passages|loom Jacquard looms@AHS|roll Silk spools@KV|basket Yarn baskets@E
+Storm Buoy Yard|pier|Buoy storage|buoy Storm buoys@AFO|winch Chain winch@N|crate Spare lights@W
+Penguin Museum|salon|Colony exhibits|penguin Penguin exhibits@BMQ|case Diorama case@E|bench Visitor bench@TU
+Mountain Rescue Hut|alpine|Rescue staging|stretcher Rescue sled@CH|tent Canvas shelter@K|case Medical cases@SY
+Clay Pipe Works|foundry|Pipe racks|pipe Clay pipes@AHI|kiln Pipe kiln@S|cart Kiln cart@UX
+Sunflower Seed Farm|farm|Drying rows|flower Sunflowers@BKS|hopper Seed hopper@H|basket Seed baskets@T
+Iron Foundry|foundry|Casting floor|kiln Casting furnace@GN|ladle Foundry ladle@BU|anvil Finishing anvil@Y
+Mirror Lake Boathouse|canal|Boat berths|canoe Racing shells@HLT|rack Oar rack@B|buoy Life buoys@V
+Watchmakers' Gallery|shop|Work stations|clock Regulator clocks@AIY|desk Jeweller desk@F|cabinet Parts cabinet@R
+Icebreaker Mooring|ice|Mooring fingers|bollard Shipside bollards@BKT|winch Tow winch@Y|ice Pack ice@X
+University Quadrangle|plaza|Campus crosswalks|bench Campus benches@AGR|tree Courtyard tree@E|sign Campus directory@Y
+Cave Pearl Chamber|cave|Dripstone passages|crystal Cave pearls@CQS|rock Dripstones@F|pool Rimstone pool@J
+Waterwheel Flour Mill|canal|Millrace walk|wheel Mill wheel@FKL|hopper Grain hopper@D|sack Flour sacks@Y
+Dovecote Court|farm|Birdhouse court|birdhouse Dovecotes@BMO|basket Feed baskets@H|post Roosting post@V
+Timber Hayloft|stacks|Bale passages|bale Hay bales@BAN|ladder Loft ladder@E|fork Hay fork@X
+Pumpkin Lantern Patch|farm|Picking rows|pumpkin Pumpkins@CHL|cart Harvest cart@V|post Field signs@Y
+Granite Sculpture Court|plaza|Sculpture walk|statue Stone figures@BJQ|plinth Plinths@H|bench Viewing bench@U
+Salt Pan Evaporator|dune|Brine terraces|pool Brine basins@FGS|pump Brine pump@D|sack Salt sacks@X
+Shanghai Riverside|canal|Promenade bends|rail River railings@ACJ|lamp Promenade lamps@MR|bench River bench@U
+Flax Dye Garden|forest|Vat courtyards|vat Dye vats@GIO|flower Flax beds@A|rack Drying rail@W
+Typewriter Exchange|shop|Repair counters|typewriter Typewriters@BLS|counter Service counters@D|chair Typing stools@V
+Sun Dial Plaza|plaza|Shadow lines|sundial Bronze sundials@EN|column Marker pillars@BP|tree Plane tree@W
+Hall of Mirrors|salon|Reflecting galleries|mirror Mirror panels@BHN|column Gilt pilasters@P|chandelier Floor candelabra@Y
+Cable Spool Depot|rail|Drum alleys|roll Cable reels@ACH|gantry Hoisting gantry@V|case Insulators@T
+Hivekeeper's Clearing|forest|Apiary lanes|hive Beehives@GNT|drum Honey drums@A|flower Wildflowers@S
+Mudflat Bird Blind|wetland|Reed hides|hut Observation blind@GL|reed Reed stands@DO|scope Spotting scope@U
+Log Cabin|stacks|Hearth passage|stove Wood stove@AM|bed Cabin bunk@CJ|chest Blanket chest@W
+Moon Rock Lab|lab|Clean benches|glovebox Sample gloveboxes@CI|rock Lunar samples@F|cabinet Sealed cabinet@UY
+Automaton Toy Shop|shop|Display islands|toy Winding toys@HKN|shelf Toy shelves@A|counter Repair counter@Y
+Coral Survey Pier|shore|Sampling slips|coral Coral samples@BIQ|tank Specimen tanks@A|canoe Survey canoe@Y
+Red Church|salon|Nave and pews|pew Timber pews@GIRS|altar Altar@B|organ Pipe organ@A
+Sequoia Fire Lookout|forest|Lookout perimeter|tower Lookout tower@G|stump Tree stumps@DNQ|tank Water cistern@U
+Botanical Print House|glass|Specimen tables|press Specimen press@FH|fern Frond displays@D|rack Paper screens@S
+Ice Core Freezer|lab|Sample racks|rack Core racks@BNO|ice Ice cores@GL|chest Cold storage@U
+Billiards Hall|arena|Table islands|billiards Billiard tables@GJS|rack Cue racks@A|lamp Shaded lamp@W
+Silt Sampling Jetty|wetland|Core stations|tripod Core tripods@BS|boat Sampling skiff@AN|case Sample crates@X
+Clock Tower Belfry|stacks|Bell aisles|bell Tower bells@BHM|gear Clock gears@T|ladder Access ladder@U
+Hot Air Balloon Field|farm|Launch pads|balloon Hot air balloons@BN|basket Gondola baskets@KS|sack Ballast sacks@Y
+Fish Hoek Beach|shore|Tidal strand|umbrella Beach umbrellas@GOS|rock Shore boulders@B|boat Fishing dinghy@U
+Lavender Distillery|farm|Still houses|still Copper stills@BKL|flower Lavender beds@DI|drum Oil drums@X
+Lighthouse Lantern Room|pier|Optics gallery|lens Fresnel lens@M|lamp Backup lanterns@DS|rail Guardrail@U
+Mossy Tipi Camp|forest|Tent circle|tent Cone tents@BKO|fire Camp hearth@M|log Firewood@Y
+Dance Hall|stage|Ballroom perimeter|mirror Dance mirrors@AF|rail Practice barres@CJ|piano Rehearsal piano@X
+Granary Loading Ramp|rail|Loading terraces|sack Grain sacks@BGJ|cart Sack trucks@R|hopper Chute mouth@U
+Porcelain Tea Shop|shop|Tea displays|teapot Ceramic teapots@BN|shelf Teacup shelves@KT|table Tasting table@E
+Rooftop Telescope Array|street|Observing pads|scope Optical telescopes@BIM|dish Radio receivers@V|case Tracking computer@T
+Chinese Garden|forest|Pavilion walk|pagoda Garden pavilion@G|rock Scholar stones@BLO|bridge Moon bridge@X
+Glacial Moraine Field|ice|Moraine channels|ice Ice pinnacles@FHI|rock Glacial erratics@SY|post Survey stakes@A
+Bread Oven Court|shop|Baking bays|oven Bread ovens@ANR|rack Cooling racks@B|sack Flour bags@Y
+Aquarium Quarantine Room|lab|Tank islands|tank Fish tanks@BHL|pump Filter pumps@O|pipe Oxygen lines@X
+Parking Garage|works|Parking bays|car Parked cars@BGNS|column Concrete columns@E|gate Barrier arm@U
+Woodcut Workshop|stacks|Carving stations|bench Woodcut benches@AHQ|press Proofing press@E|tray Ink trays@T
+Maple Syrup Camp|forest|Sap collection|tree Tapped maples@BGN|bucket Sap buckets@CJ|kiln Sugar furnace@V
+Cobblestone Tram Loop|street|Track loop|tram Tramcar@HI|signal Tram signal@B|seat Stop bench@SY
+Open-Air Theatre|plaza|Stone amphitheatre|seat Stone seats@BGIN|stage Platform@M|column Stage pillar@Y
+Seagrass Research Raft|shore|Floating walkways|raft Research pontoon@AL|reed Seagrass trays@BI|tank Seawater tank@Y
+Printing Ink Warehouse|works|Vat lanes|drum Ink barrels@BHS|roll Paper rolls@N|crate Pigment boxes@U
+Observatory Dome Hall|lab|Instrument rotunda|dome Telescope dome@M|scope Portable telescope@DT|desk Star charts@A
+Old Brick Factory|foundry|Kiln tracks|brick Brick stacks@FGIS|kiln Firing kiln@D|cart Brick trolley@V
+Blueberry Picking Shed|farm|Packing benches|basket Berry baskets@BIQ|rack Grading racks@D|stall Produce stand@W
+Textile Conservatory|salon|Textile screens|loom Tapestry frames@BLK|roll Fabric rolls@D|chest Linen chest@SY
+Cliffside Rope Bridge|alpine|Bridgeheads|bridge Rope spans@HN|post Anchor posts@BU|rock Granite edge@E
+Hotel Roof Balcony|plaza|Terrace seating|chair Terrace chairs@GNR|table Patio tables@B|pot Balcony planters@T
+Salt Marsh Windpump|wetland|Drainage banks|windmill Windpump@H|reed Rush stands@FNT|gate Sluice gate@U
+Chocolate Factory|foundry|Conching lanes|mixer Chocolate mixer@GOS|tray Mould trays@B|sack Cocoa sacks@V
+Mushroom Grotto|cave|Fungus clusters|mushroom Shelf fungi@BIM|rock Cave pillars@V|basket Spore baskets@Y
+Squash Court|arena|Service boxes|screen Front wall@BCD|rack Racket rack@N|seat Players bench@U
+Lakeside Rowing Club|canal|Shell storage|canoe Rowing shells@GNS|rack Scull rack@B|mat Launch mat@E
+Railway Signal Nursery|rail|Test tracks|signal Test semaphores@BKM|lever Signal lever@O|post Track marker@X
+Jade Carving Yard|canyon|Saw lanes|crystal Jade blocks@HNS|wheel Grinding wheels@A|bench Cutting bench@U
+Municipal Pump Station|works|Pump gallery|pump Water pumps@BHS|pipe Pressure mains@AO|wheel Isolation valve@U
+Herbarium Cabinet Hall|stacks|Cabinet galleries|cabinet Specimen cabinets@BEJ|tray Plant presses@LN|fern Dry fronds@W
+Tin Can Cannery|works|Seaming line|press Can seamers@FHN|belt Sorting belt@D|crate Tin cases@W
+Orchid Palm House|glass|Glasshouse beds|flower Orchid clusters@AFL|tree Fan palms@E|pool Mist pool@Y
+Ethnography Museum|salon|Object galleries|case Artefact vitrines@FGI|pot Earthenware pots@D|loom Historic loom@Y
+Marble Quarry|alpine|Cutting terraces|block Marble blocks@BGIO|winch Quarry pulley@X|cart Stone cart@A
+Mangrove Kayak Passage|wetland|Root channels|tree Mangrove roots@BNS|canoe Kayaks@A|buoy Channel buoys@W
+Seed Bank Vault|lab|Cold aisles|cabinet Seed lockers@FGN|chest Cold chests@D|tray Sample flats@Y
+Netball Court|plaza|Goal circles|hoop Netball goals@AU|seat Sideline benches@CJ|cart Ball cart@Y
+Wine Cellar Vaults|cave|Barrel aisles|drum Wine casks@AFN|rack Bottle racks@E|table Tasting stand@W
+Fireboat Slipway|pier|Launch rails|boat Rescue launch@FG|hose Fire hoses@NO|winch Launch winch@V
+Costume Dressing Room|stage|Dressing bays|rack Costume rails@BHL|mirror Dressing mirrors@E|chair Vanity chairs@U
+City Service Rooftop|street|Service walkways|vent Air handlers@GNS|antenna Aerial mast@B|pipe Roof vents@V
+Stone Circle Clearing|forest|Megalith ring|stone Standing stones@BDOS|fire Fire circle@M|post Trail marker@V
+Moorland Peat Cutting|wetland|Peat banks|brick Peat blocks@FGT|fork Cutting spades@B|cart Peat trolley@A
+Fencing Salle|arena|Practice pistes|mat Fencing strips@BNR|rack Foil rack@A|seat Judges bench@E
+Wood-Panelled Lounge|salon|Fireside groups|sofa Lounge sofas@GN|table Low tables@BC|lamp Floor lamps@Y
+Crate Crane Terminal|rail|Crane spans|gantry Cargo cranes@BKO|crate Freight containers@HM|bollard Crane stops@Y
+Reindeer Feeding Enclosure|ice|Feeding pens|animal Reindeer@EM|fence Pen fences@BGL|bale Fodder bales@Y
+Sandstone Caravanserai|dune|Caravan courtyard|arch Entry arch@B|stall Caravan stalls@FKA|jar Water jars@X
+Aircraft Hangar|works|Apron clearances|plane Parked aircraft@GNS|ladder Service steps@D|drum Hydraulic drums@U
+Copperplate Etching Room|shop|Etching tables|tray Etching baths@BJM|press Plate press@A|rack Plate storage@Y
+Film Reel Archive|stacks|Canister aisles|roll Film reels@GIN|cabinet Film cabinets@B|cart Reel trolley@U
+Turtle Nesting Beach|shore|Nest enclosures|nest Turtle nests@AMS|fence Nest guards@F|sign Nest signs@X
+Factory Canteen|works|Dining rows|table Canteen tables@FHNS|counter Serving line@A|tray Meal tray stacks@Y
+Juniper Cider Press|farm|Cider presses|press Cider presses@GL|drum Cider casks@DN|basket Fruit baskets@U
+Grand Piano Store|salon|Instrument islands|piano Grand pianos@BNT|seat Piano benches@G|case Sheet music case@S
+Disused Mine Railway|cave|Ore sidings|cart Mine carts@ANR|rock Shaft rubble@BG|gantry Tunnel frame@E
+Concert Music Hall|stage|Orchestra platform|piano Concert grand@G|seat Orchestra seats@BINS|stand Music stands@Y
+Beacon Dune Outpost|dune|Beacon perimeter|tower Sand beacon@M|tent Survey tents@BS|rock Dune boulders@U
+Bird Ringing Station|forest|Banding stations|net Mist nets@BHO|table Banding bench@Q|birdhouse Release boxes@Y
+Watercolour Reed Bed|wetland|Reed peninsulas|reed Reed islands@GMS|easel Field easel@B|boat Flat-bottomed punt@U
+Frozen River Bend|ice|Ice-bank bends|ice Shore ice@BAN|log Driftwood@EY|rock Bank boulder@Q
+Meteor Tracking Outpost|dune|Tracking stations|dish Radar dishes@GIS|antenna Signal antenna@C|case Sensor case@U
+Shadow Lantern Theatre|stage|Screen wings|screen Shadow screens@FH|lamp Lantern stands@NO|puppet Shadow puppets@X
+Vinegar Maker's Yard|farm|Cask terraces|drum Vinegar casks@BKS|jar Earthen jars@H|counter Filling bench@Y
+Air Museum Playground|plaza|Exhibit islands|plane Display aircraft@AHN|climb Climbing frame@T|seat Picnic bench@W
+Rock Pool Laboratory|shore|Tidal basins|pool Rock pools@GNS|tripod Sampling tripods@B|case Dive gear@Y
+Gypsum Crystal Tunnels|cave|Crystal galleries|crystal Selenite clusters@BCN|rock Gypsum columns@A|lamp Mine lamps@Y
+Steam Laundry|works|Washing aisle|vat Laundry boilers@BJS|roll Mangle rollers@G|basket Linen hampers@W
+Small Repair Workshop|works|Workbench lanes|bench Repair benches@FGS|vice Bench vises@D|chest Parts drawers@Y
+Lowland Rice Paddies|wetland|Paddy terraces|reed Rice beds@BKL|pump Water pump@E|sack Grain sacks@T
+Rosemary Courtyard|plaza|Herb beds|pot Rosemary pots@BDQ|bench Stone bench@M|well Old well@Y
+Hot Spring Lodge|alpine|Spring terraces|pool Spring pools@FGN|rock Mineral mounds@D|hut Bath hut@S
+Zavelstein Castle Cellar|cave|Vaulted cellar|arch Cellar vaults@AD|drum Wine casks@KR|chest Storage chests@Y
+Wind Harp Plateau|alpine|Wind passages|harp Wind harps@BI|stone Upright slabs@KS|post Wind vane@T
+Bookbinders' Court|shop|Bindery stations|press Binding presses@GIO|rack Paper racks@A|roll Linen rolls@X
+Eider Down Depot|pier|Packing bays|sack Feather sacks@AN|crate Export cases@FH|scale Weighing scale@U
+Borghese Gardens|forest|Garden avenues|statue Garden statues@BGN|tree Stone pines@EI|bench Park bench@U
+Glass Tide Observatory|shore|Observation arms|dome Glass viewing dome@M|coral Reef markers@GN|scope Coastal telescope@Y
+Desert Sundowner Airstrip|dune|Runway margins|windsock Windsocks@BU|plane Bush plane@J|drum Fuel drums@Q
+Cavern Echo Chamber|cave|Listening chambers|horn Acoustic trumpets@FHS|rock Basalt piers@A|sensor Microphone stand@Y
+`.trim();
+
+  const styles = ["Storybook", "Pixel art", "Painted diorama", "Cut paper"];
+  // A small variation in the light ties each venue's sky, timber and floor together.
+  function litPalette(palette, id) {
+    const tints = [[255,212,140],[142,217,207],[205,177,221],[255,184,146],[194,219,152]];
+    const tint = tints[(id * 13 + Math.floor(id / 4)) % tints.length];
+    const amount = .04 + (id % 7) * .012;
+    return Object.freeze(palette.split(" ").map((hex, index) => {
+      const weight = index === 4 ? amount / 3 : amount;
+      return "#" + [0,1,2].map(channel => {
+        const value = parseInt(hex.slice(channel*2,channel*2+2),16);
+        return Math.round(value * (1-weight) + tint[channel] * weight).toString(16).padStart(2,"0");
+      }).join("");
+    }));
+  }
+
+  const designs = book.split("\n").map((line, id) => {
+    const [name, category, layoutName, ...items] = line.split("|");
+    const [region, indoors, surface, horizon, air, landmark, palette] = environments[category];
+    const mode = id % styles.length;
+    const floor = Array(25).fill(".");
+    const fixtures = items.map((item, slot) => {
+      const [label, positions] = item.split("@");
+      const split = label.indexOf(" ");
+      for (const letter of positions) floor[letter.charCodeAt(0) - 65] = String(slot + 1);
+      return Object.freeze({kind: label.slice(0, split), name: label.slice(split + 1)});
+    });
+    const plan = Array.from({length: 5}, (_, row) => floor.slice(5 * row, 5 * row + 5).join(""));
+    return Object.freeze({
+      id, name, biome: name, category, layoutName, mode, style: styles[mode], indoors: !!indoors,
+      region,
+      surface, horizon, air, landmark, obstacle: fixtures[0].kind,
+      colors: litPalette(palette, id),
+      fixtures: Object.freeze(fixtures), fixtureLabels: Object.freeze(fixtures.map(item => item.name)),
+      plan: Object.freeze(plan)
+    });
+  });
+
+  // Each large-map wing is a faithful enlargement of the original blueprint.
+  // Adjacent wings meet at an open passage. Local shape tests carve into
+  // solid fixture blocks; every carved edge connects to its surrounding aisle.
+  function fixtureSlot(design, cell, size) {
+    const x = cell % size, y = Math.floor(cell / size);
+    if (size === 5) return Number(design.plan[y][x]) || 0;
+    const period = size <= 20 ? size : (size === 50 ? 13 : 17);
+    const wingX = Math.floor(x / period), wingY = Math.floor(y / period);
+    const width = Math.min(period, size - wingX * period);
+    const height = Math.min(period, size - wingY * period);
+    let localX = x % period, localY = y % period;
+    if (localX === 0 || localY === 0 || localX === width-1 || localY === height-1) return 0;
+    if (wingX % 2) localX = width - 1 - localX;
+    if (wingY % 2) localY = height - 1 - localY;
+    const column = Math.floor(5 * localX / width);
+    const row = Math.floor(5 * localY / height);
+    const slot = Number(design.plan[row][column]) || 0;
+    if (!slot || width < 12 || height < 12) return slot;
+    const left = Math.ceil(column * width / 5), top = Math.ceil(row * height / 5);
+    const right = Math.ceil((column + 1) * width / 5) - 1, bottom = Math.ceil((row + 1) * height / 5) - 1;
+    // Passages around each cluster keep enlarged rooms and service yards traversable.
+    if (localX === left || localY === top) return 0;
+    const kind = design.fixtures[slot - 1].kind;
+    if (linear.has(kind) && localY === bottom && bottom-top>=3) return 0;
+    if (round.has(kind) && right-left>=3 && bottom-top>=3 && localX===right && localY===bottom) return 0;
+    return slot;
+  }
+
+  const linear = new Set(["shelf","rack","counter","rail","fence","pew","bench","ladder","canoe","screen","desk","loom","pipe","belt","bridge"]);
+  const round = new Set(["rock","tree","vat","pot","well","crystal","flower","drum","pool","hive","dish","pumpkin","mushroom","stone","ice","balloon"]);
+  function makeMap(size, designId) {
+    const place = designs[designId];
+    if (!place || !Number.isInteger(size) || size < 5) throw new RangeError("Invalid location or board size");
+    return Uint8Array.from({length: size * size}, (_, cell) => Number(fixtureSlot(place, cell, size) > 0));
+  }
+  function fixtureAt(designId, cell, size) {
+    if (!Number.isInteger(cell) || cell < 0 || cell >= size * size) return null;
+    return designs[designId].fixtures[fixtureSlot(designs[designId], cell, size) - 1] || null;
+  }
+
+  const locations = Object.freeze({designs: Object.freeze(designs), makeMap, fixtureAt});
+  root.Locations = locations;
+  if (typeof module === "object" && module.exports) module.exports = locations;
+})(globalThis);
+
+</script>
+  <script>
+/* Campaign simulation. The same file runs in a browser and in Node's test runner. */
+(function (root) {
+  "use strict";
+
+  const SIZES = Object.freeze([5, 10, 20, 50, 100]);
+  const LEVELS = 30;
+  const Locations = typeof module === "object" && module.exports ? require("./locations.js") : root.Locations;
+  const DESIGNS = Locations.designs.length;
+  const CHARACTERS = Object.freeze([0, 1, 2, 3, 4, 5, 6, 7]);
+  const PRIOR = 0.3;
+  const SENSITIVITY = 0.8;
+  const FALSE_POSITIVE = 0.2;
+  const SENSOR_MODES = Object.freeze(["verified", "simulated", "positive", "negative"]);
+
+  function mix(bits) {
+    bits = Math.imul(bits ^ (bits >>> 16), 0x21f0aaad);
+    bits = Math.imul(bits ^ (bits >>> 15), 0x735a2d97);
+    return (bits ^ (bits >>> 15)) >>> 0;
+  }
+
+  function roll(stream) {
+    stream.rng = (stream.rng + 0x9e3779b9) >>> 0;
+    return mix(stream.rng) / 4294967296;
+  }
+
+  function int(stream, count) {
+    return Math.floor(roll(stream) * count);
+  }
+
+  function shuffled(items, stream) {
+    const order = items.slice();
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = int(stream, i + 1);
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    return order;
+  }
+
+  function different(stream, items, previous) {
+    const choices = items.filter(item => item !== previous);
+    return choices[int(stream, choices.length)];
+  }
+
+  // Visit each accessible tile at most once. Stop when the chosen cell is reached.
+  function explore(walls, size, start, goal) {
+    const parent = new Int32Array(walls.length).fill(-1);
+    const queue = new Int32Array(walls.length);
+    let head = 0;
+    let tail = 1;
+    queue[0] = start;
+    parent[start] = start;
+    function visit(cell, from) {
+      if (!walls[cell] && parent[cell] === -1) {
+        parent[cell] = from;
+        queue[tail++] = cell;
+      }
+    }
+    while (head < tail) {
+      const cell = queue[head++];
+      if (cell === goal) break;
+      const col = cell % size;
+      if (col + 1 < size) visit(cell + 1, cell);
+      if (cell + size < walls.length) visit(cell + size, cell);
+      if (col > 0) visit(cell - 1, cell);
+      if (cell >= size) visit(cell - size, cell);
+    }
+    return parent;
+  }
+
+  function bfs(walls, size, start, goal) {
+    const valid = cell => Number.isInteger(cell) && cell >= 0 && cell < walls.length && !walls[cell];
+    if (!valid(start) || !valid(goal)) return [];
+    const parent = explore(walls, size, start, goal);
+    if (parent[goal] === -1) return [];
+    const reversed = [goal];
+    while (reversed[reversed.length - 1] !== start) {
+      reversed.push(parent[reversed[reversed.length - 1]]);
+    }
+    return reversed.reverse();
+  }
+
+  // The classroom model is also the default for standalone numerical examples.
+  // Verified inspections use ideal contact detection, so their likelihoods differ.
+  function infer(positive, mode = "simulated") {
+    const sensitivity = mode === "verified" ? 1 : SENSITIVITY;
+    const falsePositive = mode === "verified" ? 0 : FALSE_POSITIVE;
+    const numerator = PRIOR * (positive ? sensitivity : 1 - sensitivity);
+    const evidence = numerator + (1 - PRIOR) * (positive ? falsePositive : 1 - falsePositive);
+    return { positive, prior: PRIOR, sensitivity, falsePositive,
+      numerator, evidence, posterior: numerator / evidence };
+  }
+
+  function choose(belief) {
+    const cleanQ = 10 * belief - 4 * (1 - belief);
+    const moveQ = -8 * belief + 2 * (1 - belief);
+    return { cleanQ, moveQ, action: cleanQ > moveQ ? "Clean" : "Move On" };
+  }
+
+  function transition(action, dirty) {
+    if (action === "Clean") return { reward: dirty ? 10 : -4, before: dirty ? "Dirty" : "Clean", after: "Clean" };
+    return { reward: dirty ? -8 : 2, before: dirty ? "Dirty" : "Clean", after: dirty ? "Dirty" : "Clean" };
+  }
+
+  function distance(first, second, size) {
+    return Math.abs(first % size - second % size)
+      + Math.abs(Math.floor(first / size) - Math.floor(second / size));
+  }
+
+  function chooseLocation(state, level, stream) {
+    if (level === 1 && state.firstDesign !== null) return state.firstDesign;
+    const previous = Locations.designs[state.designIndex];
+    if (!previous) return state.designPool[int(stream, state.designPool.length)];
+    const candidates = state.designPool.filter(id => {
+      const next = Locations.designs[id];
+      return next.mode !== previous.mode && next.category !== previous.category
+        && next.fixtures[0].kind !== previous.fixtures[0].kind;
+    });
+    // Each venue is removed from the pool on entry. Even a very uneven future
+    // catalogue can finish a run after it runs out of contrasting environments.
+    const pool = candidates.length ? candidates : state.designPool;
+    return pool[int(stream, pool.length)];
+  }
+
+  function placeDirt(state) {
+    const reachable = explore(state.walls, state.size, state.position, -1);
+    const floor = [];
+    for (let cell = 0; cell < reachable.length; cell++) {
+      if (cell !== state.position && reachable[cell] !== -1) floor.push(cell);
+    }
+    if (!floor.length) throw new Error("A campaign map needs reachable floor beyond the starting cell.");
+    const dust = {rng: mix(state.levelSeed ^ 0x5bd1e995)};
+    const candidates = shuffled(floor, dust);
+    // Keep one patch within the opening camera view, even on a 100 × 100 floor.
+    const first = candidates.find(cell => distance(cell, state.position, state.size) <= 3);
+    state.truth[first] = 1;
+    const count = Math.min(state.level + 1, candidates.length);
+    let placed = 1;
+    for (const cell of candidates) {
+      if (placed === count) break;
+      if (cell === first) continue;
+      state.truth[cell] = 1;
+      placed++;
+    }
+    state.dirtTotal = count;
+    state.dirtRemaining = count;
+  }
+
+  function beginLevel(state, level) {
+    state.levelEntry = {
+      size: state.size, designIndex: state.designIndex, characterIndex: state.characterIndex,
+      designPool: state.designPool.slice(), score: state.score,
+      totalMoves: state.totalMoves, totalInspected: state.totalInspected, totalCleaned: state.totalCleaned
+    };
+    const levelSeed = mix(state.seed ^ Math.imul(level, 0x1b873593));
+    const stream = {rng: levelSeed};
+    const size = state.sizeChoice === "random" ? different(stream, SIZES, state.size) : state.sizeChoice;
+    const designIndex = chooseLocation(state, level, stream);
+    state.designPool.splice(state.designPool.indexOf(designIndex), 1);
+    const place = Locations.designs[designIndex];
+    const walls = Locations.makeMap(size, designIndex, level);
+    const entry = int(stream, walls.length);
+    let position = entry;
+    while (walls[position]) position = (position + 1) % walls.length;
+    // Cosmetic choices use a separate stream, so changing character doesn't
+    // change a floor plan, a dust deposit or a sensor reading for the same seed.
+    const cast = {rng: mix(levelSeed ^ 0x9e3779b9)};
+    const characterIndex = state.characterChoice === "random"
+      ? different(cast, CHARACTERS, state.characterIndex) : state.characterChoice;
+    Object.assign(state, {
+      level, levelSeed, size, designIndex, themeIndex: place.mode, characterIndex,
+      difficulty: level, type: place.layoutName, walls, position,
+      truth: new Uint8Array(walls.length),
+      checked: new Uint8Array(walls.length),
+      inspected: 0, moves: 0, targetCell: null, route: [], routeIndex: 0,
+      phase: "select", signal: null, reading: null, decision: null, rng: mix(levelSeed ^ 0xc2b2ae35)
+    });
+    placeDirt(state);
+  }
+
+  function fixedOrRandom(value, choices, label) {
+    if (value === undefined || value === "random") return "random";
+    if (typeof value !== "number" && !(typeof value === "string" && /^\d+$/.test(value))) {
+      throw new RangeError("Unsupported " + label + ".");
+    }
+    const number = Number(value);
+    if (!choices.includes(number)) throw new RangeError("Unsupported " + label + ".");
+    return number;
+  }
+
+  function create(options = {}) {
+    const sizeChoice = fixedOrRandom(options.size, SIZES, "map size");
+    const characterChoice = fixedOrRandom(options.character, CHARACTERS, "character");
+    const sensorMode = options.sensorMode ?? "verified";
+    if (!SENSOR_MODES.includes(sensorMode)) throw new RangeError("Unsupported sensor mode.");
+    const designPool = Locations.designs.map(place => place.id);
+    const first = fixedOrRandom(options.firstDesign ?? "random", designPool, "location");
+    const seed = options.seed === undefined ? Math.floor(Math.random() * 4294967296) : Number(options.seed) >>> 0;
+    const state = {seed, sizeChoice, characterChoice, sensorMode, firstDesign: first === "random" ? null : first,
+      designPool, paused: false, score: 0, totalMoves: 0, totalInspected: 0, totalCleaned: 0};
+    beginLevel(state, 1);
+    return state;
+  }
+
+  function restartLevel(state) {
+    Object.assign(state, state.levelEntry);
+    beginLevel(state, state.level);
+    return state;
+  }
+
+  function setSensorMode(state, mode) {
+    if (state.phase !== "select" || !SENSOR_MODES.includes(mode)) return false;
+    state.sensorMode = mode;
+    return true;
+  }
+
+  function canSelect(state, cell) {
+    return !state.paused && state.phase === "select" && Number.isInteger(cell)
+      && cell >= 0 && cell < state.walls.length && !state.walls[cell];
+  }
+
+  function selectCell(state, cell) {
+    if (!canSelect(state, cell)) return false;
+    const route = bfs(state.walls, state.size, state.position, cell);
+    if (!route.length) return false;
+    Object.assign(state, {targetCell: cell, route, routeIndex: 0,
+      phase: "plan", signal: null, reading: null, decision: null});
+    return true;
+  }
+
+  function tick(state) {
+    if (state.paused || state.phase === "select" || state.phase === "complete") return state;
+    const cell = state.targetCell;
+    switch (state.phase) {
+      case "plan":
+        state.phase = state.route.length > 1 ? "move" : "scan";
+        break;
+      case "move":
+        state.position = state.route[++state.routeIndex];
+        state.moves++;
+        state.totalMoves++;
+        if (state.position === cell) state.phase = "scan";
+        break;
+      case "scan":
+        if (state.sensorMode === "verified") state.signal = Boolean(state.truth[cell]);
+        else if (state.sensorMode === "simulated") {
+          state.signal = roll(state) < (state.truth[cell] ? SENSITIVITY : FALSE_POSITIVE);
+        } else state.signal = state.sensorMode === "positive";
+        state.phase = "sensor";
+        break;
+      case "sensor":
+        state.reading = infer(state.signal, state.sensorMode);
+        state.phase = "bayes";
+        break;
+      case "bayes":
+        state.decision = choose(state.reading.posterior);
+        state.phase = "decision";
+        break;
+      case "decision": {
+        const dirty = Boolean(state.truth[cell]);
+        const outcome = transition(state.decision.action, dirty);
+        // The reward table describes the action. Re-inspecting already resolved
+        // floor has no campaign score value, even if the sensor is forced.
+        const scoreDelta = state.checked[cell] && !dirty ? 0 : outcome.reward;
+        Object.assign(state.decision, outcome, {scoreDelta});
+        if (dirty && state.decision.action === "Clean") {
+          state.truth[cell] = 0;
+          state.dirtRemaining--;
+          state.totalCleaned++;
+        }
+        state.checked[cell] = 1;
+        state.score += scoreDelta;
+        state.inspected++;
+        state.totalInspected++;
+        state.phase = "result";
+        break;
+      }
+      case "result":
+        if (state.dirtRemaining === 0) {
+          state.phase = state.level === LEVELS ? "complete" : "between";
+        } else {
+          state.targetCell = null;
+          state.route = [];
+          state.routeIndex = 0;
+          state.phase = "select";
+        }
+        break;
+      case "between":
+        beginLevel(state, state.level + 1);
+        break;
+    }
+    return state;
+  }
+
+  const Engine = Object.freeze({SIZES, LEVELS, DESIGNS, create, tick, restartLevel, setSensorMode, canSelect, selectCell,
+    bfs, infer, choose, transition,
+    pause(state) { state.paused = true; return state; },
+    resume(state) { state.paused = false; return state; }
+  });
+  if (typeof module === "object" && module.exports) module.exports = Engine;
+  else root.Engine = Engine;
+})(globalThis);
+
+</script>
+  <script>
+/* Original object silhouettes for Dustbound. Coordinates use a 40 × 40 sketch
+ * grid. Each entry gives the material, cutting outline and detail strokes.
+ * These same objects illustrate the field guide and occupy their actual map cells.
+ */
+(function(root) {
+  "use strict";
+  const swatches = {
+    wood:["#edc58c","#a77445","#553c2c"], clay:["#f1bc81","#bd7651","#694337"],
+    stone:["#dedad1","#a5a59d","#626967"], glass:["#d0efdf","#75b0a9","#416c72"],
+    water:["#b7e2d5","#559c9a","#345f6b"], steel:["#e3e3d6","#9ba9aa","#4f6066"],
+    brass:["#f4db98","#b79b65","#69563d"], fabric:["#e6bead","#b87970","#715058"],
+    leaf:["#c3d48c","#7c9b67","#425d45"], fruit:["#ffc483","#d99159","#7b5438"],
+    book:["#edd7a7","#a98868","#544d43"], coal:["#c7c1b1","#77766d","#494b4a"],
+    ice:["#efffff","#a6d3de","#678eaa"], plaster:["#f9e5cd","#d2b4a2","#897568"],
+  };
+  // silhouette | detail. Paths may contain disconnected parts of one object.
+  const drawings = `
+shelf|wood|M3 6L28 3 36 7V35L10 38 3 34Z|M3 6L10 10 36 7M10 10V38M11 19L35 16M11 29L35 26M15 11V17M20 11L23 17M28 9V15M16 21V27M23 20V26M28 19L30 25
+lamp|brass|M7 32L17 29 18 18 8 18 13 7 25 5 32 16 22 18 21 29 30 32 21 35Z|M8 18L22 18 32 16M14 8L24 8 29 15M19 20V29
+table|wood|M2 16L23 9 38 15 36 20 33 21 33 31 30 32 30 21 12 26 12 35 9 36 8 25 4 23 4 30 2 29Z|M2 16L12 22 38 15M12 22V25M5 18L22 13
+tank|glass|M3 11L26 7 37 12 36 32 13 37 3 31Z|M3 11L13 16 37 12M13 16V37M3 19L13 24 36 19M18 26Q22 22 26 25L29 23 29 28 26 26Q21 29 18 26
+basket|clay|M4 21L11 33Q18 38 30 32L36 18 29 17Q26 -1 17 7Q12 10 10 19Z|M11 19Q18 1 25 12L28 18M4 21Q17 26 36 18M10 27Q20 31 31 24M15 23L18 33M25 22L23 33
+pump|steel|M3 34V29L10 27V19Q12 12 21 15V8L18 7V4L31 3 33 6 28 9V24L36 25V31L24 33 18 29 13 33Z|M9 22Q14 14 20 19Q25 26 17 30Q11 33 9 26ZM23 10L26 9M28 23L32 24
+counter|wood|M1 17L27 10 39 15 38 31 12 37 2 32Z|M1 17L12 22 39 15M12 22V37M16 25L33 20 33 27 16 32Z
+chair|wood|M8 5L24 3 26 17 33 20 31 23 30 33 27 34 27 24 17 27 17 37 14 37 12 25 8 22 7 30 5 30Z|M9 7L22 5M10 15L25 12M8 19L17 23 33 20
+cart|steel|M2 17L7 16 10 23 13 24 27 19 30 9 34 8 30 23 13 29 8 26Z M10 32A3 3 0 1 0 16 32A3 3 0 1 0 10 32 M25 27A3 3 0 1 0 31 27A3 3 0 1 0 25 27|M3 13L21 8 28 12 27 20 12 25 6 20Z
+crystal|ice|M3 32L6 19 10 17 15 25 13 10 18 2 24 8 25 22 30 15 34 17 33 29 23 36 12 37Z|M18 2L20 12 21 30M13 10L20 12 24 8M6 19L13 32M30 17L25 30
+gantry|steel|M2 35L6 9 35 5 38 31 33 33 30 13 12 16 8 37Z|M7 11L34 7M10 17L7 25 10 27M32 14L36 23 33 25M18 14V25Q18 30 22 26
+rack|steel|M4 7L7 6 9 19 27 15 26 5 30 4 34 32 30 34 28 20 10 25 11 37 7 38Z|M8 12L29 7M10 22L30 17M12 29L31 24
+roll|book|M3 25L18 10Q22 5 28 8Q36 12 35 21L20 34Q16 39 10 35Q3 33 3 25Z|M17 11Q24 9 29 19Q32 25 28 27M8 23Q15 19 19 27Q21 34 15 34Q10 34 9 28Q10 23 14 25L16 28
+vat|clay|M3 14Q4 6 19 5Q32 4 36 12L33 28Q30 36 17 36Q6 36 5 29Z|M3 14Q20 21 36 12M5 23Q19 30 34 20M9 12Q20 7 30 11
+dish|steel|M3 8Q9 26 24 25L25 31 18 33 23 36 35 33 30 29 28 23Q34 17 31 7Q19 20 3 8Z|M6 10L24 10 20 5M15 20L22 13M26 26L29 31
+tower|wood|M6 37L15 12 11 10 12 6 19 2 28 6 29 10 26 12 34 34 29 35 26 29 14 32 12 38Z|M15 12L26 12M17 15L27 25 14 28 24 16M13 7L19 9 27 6
+case|glass|M4 14L26 8 36 15 35 30 12 36 4 31Z|M4 14L12 20 36 15M12 20V36M6 27L13 32 34 26M19 25L22 18 25 23
+plane|steel|M1 23L14 20 20 15 8 10 12 7 26 11 31 7Q37 2 38 7L32 15 32 29 28 33 25 21 20 25 13 26 10 32 8 32 8 27 3 28Z|M10 25L32 10M16 13L23 15
+bench|wood|M2 17L30 10 37 13 37 18 32 20 32 29 29 30 28 21 11 25 10 34 7 35 7 25 2 22Z|M4 18L11 22 35 15M9 18L28 13
+arch|stone|M3 36V17Q3 5 17 3Q30 0 36 10L37 31 29 33 27 19Q24 10 17 12Q10 14 11 23L11 37Z|M4 16L10 18M9 8L14 12M18 4L20 11M29 6L25 12M29 23L36 21M4 28L10 30
+pot|clay|M7 11Q20 6 33 10L31 15 27 31Q21 37 12 33L9 16 6 15Z|M7 11Q18 17 33 10M10 16Q20 20 29 15M13 21L15 29
+kiln|clay|M2 33L3 23Q5 15 12 12L13 5 20 4 21 12Q33 15 36 29L35 32 13 37Z|M11 34V26Q14 18 20 24L22 32ZM7 19L13 21M24 18L29 20M15 5V12
+bottle|glass|M10 6L17 4 17 12 21 17V29L10 32 5 30 6 19 11 14Z M24 8L30 7 30 14 34 18 34 29 25 31 22 29 22 18 25 15Z|M9 23L18 21M26 22L32 20
+bell|brass|M2 28Q11 24 11 12Q13 5 19 4L19 2 23 2 24 5Q30 8 30 16Q31 23 37 25L36 28Q21 35 2 30Z M18 32Q21 38 25 31Z|M4 28Q17 30 34 25M14 13Q15 7 20 7
+winch|steel|M3 32L6 26 10 25 11 12 15 11 17 14 25 11 28 7 32 8 32 21 37 23 36 28 9 36Z|M10 26L30 20M16 14L18 24M20 13L22 23M25 12L27 21M28 8L32 12
+boat|wood|M1 21L12 18 17 11 26 9 32 15 38 14Q37 27 14 33L7 30Z|M3 22Q17 26 37 16M15 17L20 13 25 12 29 16M10 26L14 29
+locker|steel|M4 9L29 4 36 8 36 33 12 38 4 34Z|M4 9L12 13 36 8M12 13V38M20 12V35M27 10V34M14 17L18 16M23 15L26 14M29 14L33 13
+sign|wood|M4 10L18 7 18 4 22 3 22 6 30 4 37 8 31 15 22 17 22 34 17 36 17 18 4 20Z|M9 14L29 9M23 9L28 10 25 13
+sensor|steel|M4 8L16 10 18 6 17 4 21 3 23 6 32 5 37 7 35 10 22 10 21 29 31 33 28 35 18 31 9 36 5 34 16 28 17 13 5 12Z|M18 14V26M11 7L18 9
+tent|fabric|M1 31L15 8 21 5 38 30 23 35 12 34Z|M15 8L22 34M22 6L30 31M13 31L16 18 20 32
+puppet|wood|M3 5L17 6 27 3 33 5 20 9 9 8Z M15 14Q19 9 23 14Q24 20 20 21L24 25 29 21 32 24 24 30 21 27 24 35 21 37 17 30 14 37 11 35 15 24 10 28 5 23 7 20 11 24 16 20Q12 17 15 14Z|M7 8L8 20M29 7L30 21M18 9V13
+chest|wood|M3 18Q4 10 12 9L28 6Q35 7 37 15L36 30 13 36 4 31Z|M4 19L13 24 36 18M13 24V35M11 10Q17 14 17 20M27 7Q31 10 32 17M19 24L24 23 24 27 19 28Z
+stall|fabric|M2 19L9 8 29 5 37 12 36 17 33 18 33 30 36 31 36 34 13 38 3 33 3 30 8 28 8 21Z|M3 18L13 22 36 16M10 9L8 19M17 8L14 20M24 7L21 19M30 7L29 17M10 22V28M4 30L13 34 34 29
+jar|clay|M12 5Q19 3 26 4L25 9Q23 11 29 17Q36 28 27 33Q19 38 11 33Q3 29 8 19L14 10Z|M13 6Q19 9 25 5M11 22Q19 26 29 21
+column|stone|M9 36L8 32 12 29 13 12 8 10 7 6 23 3 31 7 30 10 25 12 26 28 31 30 31 33 19 37Z|M8 6L18 9 30 7M16 13L16 28M21 12L22 27M10 32L19 34 29 31
+scope|brass|M3 17L25 7 25 5 30 3 35 12 30 15 28 13 23 16 22 22 32 33 28 35 20 26 18 37 15 36 17 26 8 33 6 32 16 21 16 18 6 22Z|M25 7L28 13M12 14L15 18M20 18L21 22
+rock|stone|M2 29L6 20 13 11 23 8 32 17 37 28 29 34 12 35Z|M6 23L15 25 23 9M15 25L12 35M15 25L28 28 32 18
+antenna|steel|M7 36L16 32 17 17 7 12 7 9 18 13 18 7 12 4 13 2 20 5 28 2 30 4 22 8 22 14 34 9 36 11 22 18 22 31 33 33 30 36 20 33Z|M19 20V29
+violin|wood|M10 33Q2 26 12 21Q17 18 14 16Q12 12 17 11L21 12 29 4 29 2 34 2 35 6 32 7 24 16Q25 21 22 22Q19 21 18 25Q20 35 14 35Z|M13 28L29 8M13 22L19 25M10 29L14 32
+gate|steel|M2 36V12L7 10 8 15 31 8 31 5 36 4 37 32 32 34 31 17 8 24 7 37Z|M8 19L31 12M11 17L15 20M20 14L24 17
+seat|fabric|M7 9L25 5 29 8 29 19 35 22 31 27 26 28 27 33 21 35 17 32 17 29 11 30 5 25 9 21Z|M10 10L24 7 25 18 12 21ZM10 23L18 26 31 22
+animal|wood|M2 17L5 11 9 9 12 13 19 16 29 14 32 9 34 11 32 19 30 25 32 32 29 34 25 26 15 27 11 35 8 34 11 24 8 18 5 20Z|M10 14L14 20M19 19L27 18M11 24L16 24
+plinth|stone|M3 31L8 28 9 12 25 8 32 12 31 26 36 28 36 32 14 37 3 34Z|M9 12L16 16 32 12M16 16V30M6 31L14 33 33 29
+tree|leaf|M5 23Q0 17 7 13Q5 5 13 7Q17 0 22 5Q31 2 31 10Q38 12 35 19Q33 25 23 24L23 31 29 34 21 36 15 34 17 24Q9 27 5 23Z|M8 18Q11 13 15 15M19 23L14 19M20 22L27 16
+ladder|wood|M4 34L17 3 21 3 8 36Z M16 35L29 4 33 4 20 37Z|M16 9L28 10M14 14L26 15M11 20L24 20M8 27L20 27M6 32L18 33
+cabinet|wood|M5 8L27 4 35 9V33L13 38 5 33Z|M5 8L14 13 35 9M14 13V37M17 17L32 14M17 23L32 20M17 29L32 26M21 18L26 17M21 24L26 23M21 30L26 29
+lever|steel|M3 28L25 22 37 27 36 32 14 38 3 34Z M12 28L9 11 12 9 15 27Z M21 26L20 6 23 5 24 26Z M28 24L31 10 34 11 31 26Z|M3 29L14 34 35 28
+signal|steel|M8 34L17 30 17 9 10 7 10 3 24 5 26 9 23 11 23 16 34 12 35 16 23 21 22 30 32 32 25 36Z|M19 13V28M26 16L31 14
+desk|wood|M2 18L25 10 38 16 37 20 32 22 32 32 26 34 26 23 14 26 14 34 9 36 7 25 3 23Z|M3 18L13 23 36 16M17 16L24 14 28 16 21 19Z
+climb|stone|M2 34L8 20 11 8 22 3 28 8 31 20 37 29 28 34 16 34 9 36Z|M12 15L16 13M18 22L23 19M13 27L18 25M22 9L24 11M26 28L30 25
+mat|fabric|M1 25L24 13 39 19 38 25 15 37 1 31Z|M2 26L15 32 37 21M10 24L24 17M21 28L32 22
+fern|leaf|M17 36L17 28Q6 29 4 23L12 23Q4 20 2 16L12 17 7 11Q15 12 18 21Q13 10 18 3L22 13Q24 8 28 7L26 18Q30 13 37 13L33 19 28 21 34 21Q31 27 22 29L22 35Z|M20 32L21 15M19 28L10 19M22 26L31 18
+tray|wood|M2 23L26 14 38 20 35 28 13 36 3 31Z|M4 24L13 29 35 21M13 29V34M10 24L26 19
+tractor|steel|M1 23L7 20 9 10 22 8 25 17 34 17 37 22 35 28 7 31 2 28Z M4 29A6 6 0 1 0 16 29A6 6 0 1 0 4 29 M26 27A4 4 0 1 0 34 27A4 4 0 1 0 26 27|M10 12L19 11 20 17 9 18ZM27 16V11
+drum|steel|M7 9Q18 2 30 8L31 29Q26 37 9 33Z|M7 10Q16 16 30 9M8 17Q18 23 30 16M8 26Q19 31 31 24
+crate|wood|M2 12L24 6 37 12 37 30 14 37 3 31Z|M2 12L14 18 37 12M14 18V37M4 15L12 30M17 21L32 29M34 16L17 32
+pool|water|M1 22Q4 17 11 17Q17 10 26 13Q28 16 37 17Q42 25 33 28Q25 29 18 34Q6 37 2 30Z|M7 25Q12 23 18 25Q22 24 25 21M18 29Q22 30 28 26
+press|steel|M4 36V10L9 8 9 5 30 4 34 8V29L37 31 36 34 13 38Z M12 15V23L26 20V11Z|M12 24L27 21 31 24 15 28ZM19 7V17M15 16L22 15
+gondola|steel|M5 18L16 14 15 8 20 3 24 5 20 8 21 14 31 11 36 16 34 29 12 36 5 31Z|M6 19L13 23 34 17M13 23V32M18 22L19 27M26 19L26 24
+easel|wood|M3 36L14 6 17 5 16 9 29 6 34 22 27 24 34 33 31 35 23 25 14 27 8 38Z|M10 23L15 12 27 9 30 20ZM12 27L32 22
+canvas|fabric|M3 12L29 5 36 29 10 36Z|M6 14L27 9 32 27 12 32ZM10 26L15 21 20 23 24 16 29 24
+canoe|wood|M1 26Q4 14 29 12L38 8Q36 22 17 29Q7 32 1 26Z|M5 25Q14 25 31 16M15 17L18 22M21 14L24 19
+reed|leaf|M4 36L5 22 9 27 7 9 10 6 13 23 14 13 18 10 19 24 23 5 26 4 24 23 31 12 34 12 28 28 35 24 28 32 15 36Z|M12 31L11 18M18 33L22 17M23 30L30 18
+bollard|steel|M7 30Q10 27 14 27V16Q8 12 12 9Q19 5 26 9Q30 11 25 15V25Q34 25 34 30L20 35Z|M12 11Q19 14 26 10M12 28Q20 31 28 26
+horn|brass|M3 10Q5 3 12 5L25 17Q28 19 32 15L35 18Q31 24 25 24L21 26 24 31 30 32 29 35 12 37 8 34 15 31 18 25 19 22 7 17Z|M5 8Q10 8 12 16M13 10L22 19
+pipe|steel|M2 24L12 20V12Q12 7 17 6L30 3 34 5 34 11 30 13 27 11 20 13 20 23Q20 27 15 29L7 32 4 34 1 31Z|M13 19L20 20M25 5L27 11M4 25L7 31
+screen|fabric|M3 8L32 4 35 25 23 28 24 31 31 33 28 35 21 32 11 36 8 34 18 29 6 31Z|M6 11L29 8 31 22 9 27ZM7 30L34 24
+fossil|stone|M2 28L5 15 15 7 32 9 37 25 27 33 9 35Z|M11 23Q9 13 20 12Q29 12 30 21Q31 29 21 29Q14 29 14 22Q14 17 20 17Q25 17 25 22Q24 26 19 23
+loom|wood|M3 35L7 11 10 6 34 3 36 7 32 30 27 32 28 25 12 29 11 35 7 37Z|M10 10L32 7M10 22L30 18M13 11L11 22M17 10L16 21M22 9L20 20M27 8L25 19M10 27L30 22
+buoy|fruit|M5 28Q11 25 12 21L15 19 16 6 20 3 24 6 25 18 29 20 30 24 36 26Q33 32 20 35Q9 35 5 30Z|M16 8L23 7M13 19Q20 22 26 18M9 27Q21 31 31 25
+penguin|coal|M9 31Q11 27 10 20L7 26 5 25 8 16 12 11Q12 4 18 3Q26 1 28 8L34 11 28 13Q29 19 33 23L32 26 28 24 27 30 32 32 30 34 23 33 17 36 10 35 7 33Z|M15 15Q21 12 25 16Q28 23 24 29Q16 34 14 25ZM23 8L24 8
+stretcher|fabric|M1 24L24 8 28 8 28 10 34 15 37 13 39 15 15 34 11 35 10 33 5 29 2 30Z|M5 24L25 11 32 16 12 30ZM14 19L21 24
+flower|leaf|M16 36L16 26Q4 28 5 17Q13 16 18 24L19 15Q13 17 11 12Q8 8 14 7Q13 1 19 4Q23 0 26 5Q32 4 31 10Q31 15 24 14L22 24Q26 16 36 16Q35 26 23 27L22 34Z|M16 9Q19 6 23 8Q25 12 20 13Q17 13 16 9
+hopper|steel|M1 11L26 5 39 11 26 23 25 28 34 31 32 33 23 31 20 36 17 36 18 28 14 25Z|M2 11L15 16 39 11M15 16L20 25M22 24L26 23
+ladle|steel|M3 21Q10 16 19 19L29 9 31 4 35 2 37 6 33 11 23 23Q23 30 18 33Q7 39 4 30Z|M4 22Q13 25 21 20
+clock|wood|M7 34L10 31 10 16 7 13 9 6 17 2 26 4 31 8 30 14 28 17 29 29 33 32 30 35 13 37Z|M13 10A7 6 0 1 0 27 10A7 6 0 1 0 13 10M20 6V10L24 12M17 21L22 19 22 28 17 29Z
+ice|ice|M1 30L7 13 13 15 16 4 24 6 27 18 34 12 38 29 28 33 18 34 10 37Z|M7 13L11 28 16 20M16 4L21 14 23 30M34 12L29 25
+stove|coal|M6 17L17 14V4L23 3V13L30 11 34 15 32 29 29 31 29 35 25 35 24 32 13 34 12 37 8 37 9 32 6 29Z|M8 18L15 21 33 15M17 23L28 20 28 26 17 29Z
+bed|fabric|M2 22V13L6 12 6 16 27 9 29 6 33 5 36 12 37 29 34 31 32 27 13 33 12 37 8 37 7 31 2 28Z|M3 21L12 26 35 17M12 26V33M21 14L29 12 33 14 26 17Z
+`.trim();
+  const more = `
+wheel|wood|M3 19Q3 6 16 3Q29 0 34 12Q40 27 25 33Q11 40 5 28Z M9 19Q9 29 17 30Q28 31 30 20Q32 9 24 8Q13 6 9 19Z|M7 13L31 25M14 6L23 32M7 26L30 9M6 20L32 15
+anvil|coal|M1 12L13 12 16 8 34 6 38 10 36 15 26 19 23 23 26 28 34 29 32 33 10 36 5 32 14 29 17 23 14 20 8 19Z|M16 10L23 14 37 10M12 16L23 17
+sack|fabric|M11 34Q3 32 7 20L15 11 12 5 22 7 28 3 28 8 24 12Q33 19 34 26Q33 33 23 35Z|M15 12L24 10M12 24L16 18M25 26L28 30
+birdhouse|wood|M4 16L15 4 27 4 37 13 29 15 29 25 22 27 23 34 18 36 17 28 9 26 9 17Z|M5 16L14 16 23 6M15 17V25M18 15Q19 10 23 12Q26 15 22 17Q19 18 18 15
+post|wood|M10 36L12 8 17 2 22 6 23 30 29 32 27 35 15 38Z|M13 9L18 11 22 7M18 12V31
+bale|fruit|M3 16L23 8 35 14 36 29 17 36 4 31Z|M3 16L16 22 35 14M11 14L22 19 23 33M20 10L30 16 31 30M6 24L13 27
+fork|wood|M6 35L22 20 17 13 18 5 20 5 21 12 24 14 24 4 26 3 28 13 31 11 32 3 34 3 34 14 27 20 10 37Z|M9 33L23 19
+pumpkin|fruit|M3 23Q2 14 11 13Q15 9 20 12L21 6 27 4 29 7 25 9 24 13Q31 9 35 17Q40 26 31 32Q21 37 12 34Q3 34 3 23Z|M14 15Q8 25 15 33M21 14Q16 25 21 33M27 15Q33 23 27 31
+statue|stone|M7 36L8 32 13 30 14 20 11 16 13 13 17 13 16 9Q16 3 21 3Q27 2 27 7L24 12 28 12 31 22 28 24 25 20 25 29 31 31 32 34 18 37Z|M15 17L23 21M18 22L16 29M9 32L17 34 30 31
+rail|steel|M2 36V15L5 13 5 16 33 7 34 4 37 4 38 26 34 28 33 13 20 18 21 28 17 30 16 19 6 23 6 34Z|M5 18L33 9M6 28L34 18
+typewriter|coal|M2 26L8 22 9 15 14 13 12 8 28 5 30 12 34 13 32 18 37 25 34 30 12 36 3 32Z|M12 14L31 10M11 18L29 14M7 26L31 20M10 29L34 23M14 31L27 27
+sundial|brass|M2 24Q6 17 18 16L27 5 25 16Q36 16 38 21Q37 27 23 29L23 32 30 34 26 36 13 37 8 33 15 30 15 29Q5 30 2 25Z|M9 23L24 20 27 6M12 26L15 24M28 24L26 22
+mirror|glass|M5 9Q16 0 28 3L33 27 25 30 29 34 26 35 20 31 14 33 11 37 8 37 9 32Z|M8 11Q15 5 26 6L29 25 13 29ZM13 20L21 10M17 24L24 15
+chandelier|brass|M5 9L7 9 8 15 12 19 17 19 17 12 14 10 14 5 17 4 19 10 21 11 22 7 22 4 25 3 26 8 24 11 22 13 23 18 29 16 32 12 31 7 34 6 35 13 32 19 23 22 23 30 31 32 28 35 14 36 10 33 17 30 17 23 10 22 5 17Z|M8 19L14 21M21 23V29
+hive|fruit|M5 31L6 23 8 23 9 16 11 16 13 10Q19 2 25 9L28 13 31 14 32 20 34 22 36 28 32 32 14 36Z|M11 15Q21 20 30 14M9 22Q21 27 32 20M7 28Q16 32 32 26M16 31L20 28
+hut|wood|M1 20L12 9 25 5 38 15 33 17 33 29 15 36 5 31 5 21Z|M2 20L16 24 37 15M15 24V36M20 32V25L26 23 26 30
+glovebox|steel|M2 14L26 8 37 13 36 28 29 30 29 34 26 34 25 31 13 34 12 37 8 37 8 33 3 30Z|M4 16L12 20 35 14M13 21V31M17 23Q19 20 21 23Q21 27 18 28ZM25 21Q28 19 29 22Q28 25 26 26Z
+toy|brass|M5 27L7 18 12 16 12 10 18 7 25 10 24 16 28 15 29 18 35 15 36 18 30 22 28 28 23 30 25 34 18 36 15 30 12 31 10 36 4 35 8 29Z|M15 11L21 10M16 20L23 18 22 24 16 26ZM10 10L5 9V5M6 8L2 7
+coral|clay|M3 32L8 28 9 22 4 19 3 11 6 10 8 16 11 17 12 5 15 4 16 18 19 13 20 7 23 8 23 16 19 22 20 25 25 22 26 10 29 8 30 17 34 12 36 13 32 21 29 23 28 29 34 30 32 33 18 36Z|M12 28L14 21M22 29L27 25
+pew|wood|M2 16L6 14 7 19 29 12 30 7 34 6 37 22 34 25 34 30 31 31 30 28 9 34 7 37 4 36Z|M6 21L29 14 33 22 10 29ZM10 29L10 33
+altar|stone|M2 16L23 9 38 14 37 19 32 20 32 28 35 30 34 33 14 37 5 32 8 30 7 21 2 20Z|M2 16L13 22 38 14M11 22L18 25 27 22 26 19M6 32L14 34 33 29
+organ|wood|M3 35V19L8 17V9L11 9V17L14 16V5L17 5V15L20 14V2L24 2V13L27 12V6L30 6V12L35 13V30L13 37Z|M6 23L29 17 34 20 12 27ZM10 24L11 26M16 22L17 24M23 20L24 22
+stump|wood|M2 34L9 26 10 10Q17 4 28 7L30 25 36 29 30 32 25 30 19 36 12 33 7 37Z|M10 11Q17 17 29 9M15 11Q19 8 24 10M13 18L12 25M24 16L26 24
+billiards|leaf|M1 16L25 7 39 14 38 20 34 21 34 29 31 30 30 22 13 28 13 35 9 36 8 27 2 24Z|M4 16L14 21 35 14 25 10ZM12 23L36 15M16 17L24 14M27 12L29 13
+tripod|steel|M4 35L15 20 16 13 13 11 14 6 24 3 30 6 29 10 23 13 22 20 34 32 31 35 21 25 19 37 16 37 17 25 8 36Z|M15 7L21 10 29 7M18 14L21 14
+gear|steel|M2 19L6 17 7 13 5 10 9 7 13 8 15 6 15 3 21 2 23 6 27 6 30 3 34 7 32 11 34 15 38 15 38 21 34 23 31 28 32 31 27 34 24 31 21 32 19 37 14 36 13 32 9 30 6 31 3 27 6 23 2 22Z M13 21A7 8 0 1 0 27 18A7 8 0 1 0 13 21Z|M10 13Q16 6 24 9M26 27L23 29
+balloon|fabric|M5 14Q4 3 16 2Q30 -1 34 10Q38 19 25 26L23 28 25 28 24 34 17 37 11 34 12 30 15 29 12 25Q6 21 5 14Z|M16 3Q10 13 16 24M24 3Q32 12 23 23M13 26L16 30 23 28 24 25M13 32L18 34 24 31
+umbrella|fabric|M1 20Q5 8 16 7L17 3 20 2 21 6Q32 7 38 17L34 16 30 20 25 18 21 22 21 31 26 33 23 35 14 36 11 34 17 31 17 22 12 20 7 23 6 20Z|M19 7Q12 11 8 20M20 7Q27 10 30 17M19 10L19 19
+still|brass|M3 29Q3 22 11 18L12 12 16 10 17 4 23 3 26 8 31 9 33 19 35 21 35 31 27 33 24 28 22 33 14 36 6 34Z|M9 19Q16 22 21 18M18 7L23 8M28 12L29 22 33 23M27 25L34 23
+lens|glass|M5 30L10 25 10 13 15 7 23 3 28 6 32 13 31 23 27 27 32 30 31 33 17 37 6 34Z|M13 13Q20 5 26 9Q32 16 24 23Q17 28 13 23Q9 19 13 13ZM16 15Q21 9 25 12Q29 17 23 21Q17 24 16 20Z
+fire|fruit|M2 31L12 28Q6 23 12 15Q11 22 17 22Q16 9 23 4Q22 11 28 14Q34 21 27 27L37 29 35 32 24 32 16 36 10 35 11 32 5 34Z|M17 28Q15 25 21 18Q20 23 25 23Q24 28 20 30
+log|wood|M3 26L23 12Q29 8 34 14Q38 20 33 25L14 35Q7 39 3 31Z|M4 26Q9 21 15 27Q20 33 13 35M12 25L28 16M18 29L33 21
+piano|coal|M2 22L4 15 12 13Q14 4 23 4Q34 3 37 11Q37 18 28 21L29 28 26 31 24 22 15 26 14 34 11 36 10 27 5 25 5 32 2 31Z|M3 18L12 22 29 16M7 17L15 20 24 17 17 14ZM15 9Q21 4 27 8
+teapot|clay|M8 28Q5 19 12 14L15 11 13 9 17 7 21 8 23 6 26 9 24 12 28 14Q38 10 37 18Q37 26 29 27Q26 34 17 35Q9 35 8 28L2 21 1 15 5 16 10 20Z M29 17L30 23Q36 20 33 16Z|M13 13Q20 17 25 12M13 24Q12 30 18 31
+pagoda|wood|M1 20Q11 17 14 12L6 13Q14 8 20 4L20 1 23 3 23 5Q27 10 33 10L27 13Q31 16 39 17L32 21 31 29 36 30 35 33 14 37 4 33 7 30 8 23Z|M8 20L18 23 34 18M12 24V30M22 23V29M9 31L16 33 32 29
+bridge|wood|M1 29L4 25 5 16 8 15 8 21Q20 9 31 10L32 5 35 4 35 11 39 13 38 18 34 19 33 24 30 25 29 20Q14 20 9 30L8 34 4 35Z|M7 22Q19 10 33 13M8 28Q19 16 34 16M15 15L16 21M24 11L25 17
+oven|clay|M3 32L4 19Q6 9 17 6Q29 4 34 17L36 28 35 33 14 37Z|M10 32V23Q15 14 23 21L25 29ZM7 18L13 17M23 12L28 15M4 31L10 34
+car|steel|M1 24L4 18 11 15 17 8 25 6 31 10 34 16 38 17 38 24 34 26 31 29 27 27 14 32 12 35 7 34 6 31 2 29Z|M13 15L18 10 24 9 27 13 19 18ZM22 16L29 12 32 15M5 23L11 25M29 23L35 21
+bucket|steel|M5 18Q6 7 14 4Q26 -1 30 12L34 13 30 30Q23 36 12 33L7 20Z|M7 17Q13 1 23 5Q27 6 28 13M6 18Q18 22 33 14M14 22L15 29
+tram|fabric|M2 15L24 6 34 10 38 22 35 28 29 30 28 33 24 33 22 31 12 35 8 33 4 34 3 31Z|M4 16L23 10 24 16 5 23ZM27 10L32 13 34 17 28 16ZM12 14L13 20M17 12L18 19M10 12L18 5 23 6
+stage|wood|M1 22L26 12 39 20 39 26 17 35 17 38 13 39 10 35 2 31Z|M2 23L14 30 38 21M13 30V34M20 28V32
+raft|wood|M1 24L25 9 38 14 36 18 38 21 33 24 32 27 13 37 10 35 7 35 3 32 4 29 1 28Z|M4 27L29 12M7 31L33 15M10 34L34 20M10 19L23 26M18 14L31 21
+dome|steel|M2 30L3 22Q4 9 17 5Q31 2 37 17L38 27 30 32 16 36 5 33Z|M4 21Q19 28 37 18M14 7Q21 13 24 23M19 5Q25 10 29 21M5 27L16 31 36 25
+brick|clay|M2 30V22L8 20 7 14 20 10 26 12 28 9 36 13 36 20 38 22 38 28 13 37Z|M3 22L13 27 37 21M13 27V36M8 15L18 19 34 14M18 19L18 24M23 26L24 31M7 26L7 31
+windmill|wood|M7 34L13 19 19 15 9 13 6 8 17 11 15 3 20 2 23 13 30 4 35 6 26 16 37 18 36 23 24 19 29 31 34 32 32 35 15 38Z|M18 17L22 15 24 18 21 20ZM14 31L20 22 22 31
+mixer|steel|M2 33L6 28 8 16 4 12 9 7 16 10Q24 5 30 11Q36 17 29 24L32 28 36 29 35 33 27 32 23 27 14 29 12 33 8 36Z|M13 12Q11 20 22 23M17 10Q15 16 25 20M7 27L13 27
+mushroom|clay|M2 20Q5 9 15 9Q23 8 27 15Q27 19 18 22L19 29 24 31 22 34 10 35 7 32 12 29 12 22Z M23 22Q26 15 33 17L38 22 32 25 32 29 35 31 30 33 27 31 28 25Z|M5 19Q13 21 24 16M13 14L15 13M31 20L33 21
+belt|steel|M2 21L27 10Q34 7 38 13Q41 20 34 24L30 26 30 31 27 32 25 28 13 33 13 36 9 37 7 33Q1 32 2 25Z|M6 24L30 14Q35 12 35 16Q35 19 32 20L10 29Q5 31 5 27ZM12 21L15 24M21 17L24 20
+block|stone|M2 14L23 7 37 14 36 30 15 37 3 30Z|M3 14L16 20 37 14M16 20V36M5 19L11 23M23 22L31 19
+hoop|steel|M5 36L14 32 14 8 6 9 5 4 22 2 24 7 19 8 20 13Q33 8 36 14Q36 20 23 22L23 26 19 27 19 31 24 33 21 35 10 37Z|M20 15Q29 10 33 14Q32 19 22 19ZM24 20L25 24 30 20
+hose|leaf|M2 26Q2 17 19 13Q34 9 36 18Q40 27 23 32L24 34 18 36 14 33Q3 35 2 26Z M9 25Q10 30 23 26Q32 23 29 19Q27 16 18 19Q9 21 9 25Z|M6 23Q12 14 29 16M11 30Q21 32 32 24
+vent|steel|M2 18L26 10 38 16 37 30 13 37 3 31Z|M2 18L13 24 37 17M13 24V36M17 26L34 21M17 29L34 24M17 32L34 27M8 18L24 13
+stone|stone|M6 34L9 14 13 5 23 3 28 10 31 28 35 32 25 36 14 37Z|M13 6L18 14 16 32M18 14L25 9M27 17L29 28
+sofa|fabric|M2 19L6 16 10 17 11 10 29 5 34 7 33 17 36 16 39 19 37 29 31 31 31 34 28 35 26 32 12 36 8 35 6 37 3 35Z|M9 20L17 23 31 19M12 15L28 10M14 26L33 21M7 23L8 31
+fence|wood|M2 37L3 10 6 7 9 10 9 14 19 11 19 7 22 4 25 7 25 9 33 7 33 4 36 2 38 5 38 29 34 30 33 23 25 25 25 32 20 34 19 26 9 29 8 36Z|M8 18L35 10M9 24L33 16
+nest|wood|M2 27L6 24 3 20 11 22Q10 15 16 15Q19 13 22 17Q22 10 27 11Q32 12 30 20L36 16 35 21 39 22 32 29 23 34 13 35 5 32Z|M6 25L25 30 34 21M8 30L19 27 31 25M13 22Q13 15 18 18Q21 21 18 23M23 19Q23 12 27 14Q30 16 28 20
+stand|steel|M3 14L23 6 32 8 29 21 22 23 22 29 33 32 30 35 20 32 17 37 14 36 16 31 7 34 5 32 17 27 17 24 6 27Z|M7 16L23 10 26 12 24 18 9 23
+net|fabric|M2 35L3 9 6 7 7 12Q17 17 31 7L32 4 36 3 37 30 33 32 32 15Q21 27 8 21L7 35Z|M8 15Q17 21 31 11M11 15L17 22M17 16L22 21M24 14L27 18
+vice|steel|M2 28L11 24 13 17 8 16 6 9 15 6 17 14 22 13 23 5 33 3 35 11 29 15 28 22 37 24 35 28 25 31 22 34 15 36 6 33 2 32Z|M11 10L15 9M25 8L32 6M10 27L25 23M24 17L33 19
+well|stone|M3 18L4 14 10 10 11 5 25 3 34 9 36 11 29 13 29 16 35 20 33 29 23 34 11 35 4 31Z|M9 16L10 11 29 7M12 12V20M26 11V18M5 22Q19 28 34 20M8 28L13 30 30 25
+harp|brass|M6 35L8 31 8 9 5 7 6 4 12 3Q21 10 31 4L34 7 18 30 28 32 26 35 15 37Z|M12 9V28L29 9Q21 14 12 9ZM16 12V23M20 13V19
+scale|brass|M2 19L10 10 9 7 17 5 19 2 22 3 23 5 31 3 32 6 38 14Q34 23 26 17L30 7 22 9 23 28 31 31 29 34 14 36 8 32 17 28 17 10 12 10 17 17Q15 26 3 23Z|M5 19L14 17M27 16L36 14M20 13V26
+windsock|fabric|M7 36L13 32 14 8 11 7 12 4 17 3 19 7Q24 5 28 8L38 12 38 16 26 14 18 12 18 31 24 33 21 35 14 37Z|M22 8L22 13M28 9L28 14M33 11V15
+`.trim();
+
+  const paths = new Map();
+  for (const line of (drawings + "\n" + more).split("\n")) {
+    const [kind, material, contour, marks] = line.split("|");
+    paths.set(kind, {material, contour, marks});
+  }
+  // Small pieces of coloured paper give furniture a readable use at board scale.
+  // Coordinates match the object's sketch; every piece stays attached to its fixture.
+  const inlays = {
+    shelf: [
+      ["#516764","M12 17L12 12 15 11.6 15 16.8Z M23 26L23 20.4 26 20.1 26 25.6Z M13 36L13 31 16 30.5 16 35.5Z"],
+      ["#b75e47","M17 16.7L16 11.3 19 11 20 16.4Z M12 27.4L12 21.5 15 21.1 15 27Z M27 33.8L26 29 30 28.5 31 33.4Z"],
+      ["#f4d193","M22 16.4L20.6 12 23 11.5 24.6 16Z M28 15.5L28 10 31 9.5 31 15.1Z M18 26.6L17 22 19.5 21.5 21 26.1Z M19 35.4L19 30 22 29.6 22 35Z"]
+    ],
+    lamp:[["#6f9f81","M10 16.5L14 8.8 24 7.5 29.6 15.5 21.7 17Z"],["#ffdea0","M12 18L22 18 29 16.5 26.5 18.5 19 19.5Z"]],
+    basket:[["#ead5a6","M9 20Q8 15 12 15Q15 15 16 20Z M17 20Q17 13 21 14Q25 16 23 19Z M25 18Q27 13 30 16L29 18Z"]],
+    tank:[["#507e83","M14 26L35 21 34.8 30.5 14 35Z"],["#f08c61","M18 28L19 25.5 21 27Q23 24 25.5 25.8L27 23 28.7 24.4 27.7 26.5 26 27Q23 30 21 28.3Z"],["#b9e7d5","M16 19L18.5 18.5 16 24Z M31 18L33 17 31 22Z"]],
+    pump:[["#4b8c88","M11 21Q16 13 21 20Q24 26 17 29Q12 30 10 26Z"],["#e3bd75","M13 23Q15 19 18 20Q21 21 20 25L17 26Z"]],
+    kiln:[["#e78d58","M12 32L13 26Q15 21 18 26L20 31Z"],["#ffd67a","M15 31Q14 29 16 26Q19 28 18.5 31Z"]],
+    crystal:[["#98c8d9","M14 11L19 13 21 29 15 21Z"],["#bd9fcf","M24 32L26 23 30 16 28 29Z"]],
+    bell:[["#e5bf72","M10 24Q14 17 13.5 12Q16 7 18.5 8Q15 12 16.5 17L14 24Z"]],
+    gantry:[["#d5a551","M6 10L12 9 9 13 6 14Z M15 8.7L21 8 17 11.5 12 12Z M24 7L30 6.5 27 10 21 10.8Z"]],
+    cart:[["#9c624c","M8 14L21 10 25 12 24 18 13 22Z"]],
+    plane:[["#a65949","M5 22L16 19 20 16 22 17 13 23Z M29 16L31 14 31.2 26 28.5 28Z"]],
+    tent:[["#d17951","M3 30L15 11 20 31.5 13 32 13 24 9 31Z"]],
+    boat:[["#ab604e","M7 24Q18 27 34 19Q29 25 18 29L13.5 30Z"],["#f7d69c","M9 26L14 28.5Q23 27 29 24Q23 29 14 30Z"]],
+    bottle:[["#588b82","M7.5 22L18.5 20 18.5 27.5 10 29.5 7 28.3Z"],["#deb179","M23.5 22L32 20.5 32 26.5 25.5 29 23.5 28Z"]],
+    case:[["#e1ba75","M17 27L21 20 24 26 21 28Z"],["#e6e9c9","M28 19.5L32 18.4 28 23Z"]]
+  };
+  const book=[["#ae6552","M10 15L18 12.5 23 15 15 17.5Z"],["#fbe6ba","M10 14L18 11.5 23 14 15 16.5Z"]];
+  const cup=[["#6f483d","M14 15Q17 12 24 14.8Q22 17.5 15 16.5Z"],["#f1e7ce","M16 10L21 9.8 21 11Q25 9.8 24 12.2Q23 14.1 21 13.6Q20.2 15.5 17 15Z"],["#83573f","M16.2 10Q18.3 8.7 21 9.7Q19.8 11.2 16.2 10Z"]];
+  const coffeeMachine=[["#3c675f","M12 16L12 7 25 4.8 30 7.3 30 13 26 14 26 17 20 18.5 20 16Z"],["#b4c9b8","M13.4 8L25 6 27.5 7 16 9.6Z"],["#efd8a5","M18 11L26 9.5 26 11 18 12.5Z M21 13.3L24 12.8 24 15.5 21.8 16Z"]];
+  const foliage=[["#436952","M7 12Q3 9 5 4Q9 4 12 9Q12 3 14 1.5Q18 3 18 8Q21 1 24 2Q27 5 23 10Q28 4 33 6Q33 10 28 12Z"],["#80a479","M7 11L6 6 12 10Z M15 9L16 3 18 10Z M23 10L28 6 26 11Z"]];
+  const wisteria=[["#556f55","M4 18Q3 2 17 2Q29 -1 36 8L34 13Q27 4 21 7Q10 4 7 20Z"],["#b391bb","M5 11Q6 8 8 10L7 20 5 16Z M10 6Q12 4 14 5L12 13Z M21 4L24 4 24 13 21 10Z M28 6L31 7 30 16 28 12Z"],["#e0b9d3","M5 11L7 10 6 14Z M11 6L13 5 12 8.5Z M22 5L24 5 23.2 9Z M29 7L30.9 8 30 11Z"]];
+  const seat=[["#a55b4b","M9 18.3L23.9 15 31 19.3 17 22Z"],["#dfad75","M10.2 18.6L23.8 15.7 25.5 16.4 12 19.5Z"]];
+  const pathCache=new Map();
+  function paintPieces(ctx,pieces) {
+    if(!pieces)return;
+    for(const [colour,outline] of pieces){
+      if(!pathCache.has(outline))pathCache.set(outline,new Path2D(outline));
+      ctx.fillStyle=colour;ctx.fill(pathCache.get(outline));
+    }
+  }
+  function trimFixture(ctx,fixture,design){
+    paintPieces(ctx,inlays[fixture.kind]);
+    if(fixture.kind==="table" && design.category==="stacks")paintPieces(ctx,book);
+    if(fixture.kind==="table" && /café|tasting|patio|canteen/i.test(fixture.name))paintPieces(ctx,cup);
+    if(fixture.kind==="chair" && design.category==="salon")paintPieces(ctx,seat);
+    if(fixture.kind==="counter" && /espresso/i.test(fixture.name))paintPieces(ctx,coffeeMachine);
+    if(fixture.kind==="arch" && /vine/i.test(fixture.name))paintPieces(ctx,wisteria);
+    if(fixture.kind==="pot" && /wisteria|planter|rosemary/i.test(fixture.name))paintPieces(ctx,foliage);
+  }
+
+  function draw(ctx, fixture, x, y, scale, design, variant = 0) {
+    if (!fixture) return;
+    const shape = paths.get(fixture.kind);
+    if (!shape) return;
+    if (!shape.body) {
+      shape.body = new Path2D(shape.contour);
+      shape.detail = new Path2D(shape.marks);
+    }
+    const [highlight, mid, shadow] = swatches[shape.material];
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = "rgba(26,30,28,.18)";
+    ctx.beginPath(); ctx.ellipse(1.8, -1.8, 15.8, 4.2, -.08, 0, 2*Math.PI); ctx.fill();
+    if(fixture.kind==="lamp"){
+      const glow=ctx.createRadialGradient(0,-12,1,0,-12,17);
+      glow.addColorStop(0,"rgba(255,231,150,.65)");
+      glow.addColorStop(.52,"rgba(255,223,139,.30)");
+      glow.addColorStop(1,"rgba(255,229,159,0)");
+      ctx.fillStyle=glow;ctx.fillRect(-17,-29,34,34);
+      ctx.beginPath();ctx.ellipse(0,-1,12.5,3.8,0,0,2*Math.PI);
+      ctx.fillStyle="rgba(255,222,142,.38)";ctx.fill();
+    }
+    ctx.translate(-20,-36);
+    ctx.lineJoin = "round"; ctx.lineCap = "round";
+    const light = ctx.createLinearGradient(8, 3, 31, 35);
+    light.addColorStop(0, highlight);
+    light.addColorStop(.43 + .025 * (variant % 3), mid);
+    light.addColorStop(1, shadow);
+    ctx.save(); ctx.translate(1.1, .8); ctx.fillStyle = shadow; ctx.fill(shape.body, "evenodd"); ctx.restore();
+    if(design?.mode===3) {
+      ctx.save();ctx.translate(1.35,1.8);ctx.strokeStyle="#514d55";
+      ctx.lineWidth=1.8;ctx.stroke(shape.body);ctx.restore();
+      ctx.strokeStyle="#ecdec3";ctx.lineWidth=2.2;ctx.stroke(shape.body);
+    }
+    ctx.fillStyle = design?.mode === 1 || design?.mode === 3 ? mid : light;
+    ctx.fill(shape.body, "evenodd");
+    ctx.strokeStyle = shadow; ctx.lineWidth = design?.mode === 2 ? .52 : .85; ctx.stroke(shape.body);
+    ctx.save(); ctx.translate(0,-.55); ctx.strokeStyle = highlight; ctx.lineWidth = 1.4; ctx.stroke(shape.detail); ctx.restore();
+    ctx.strokeStyle = shadow; ctx.lineWidth = 1.05; ctx.stroke(shape.detail);
+    trimFixture(ctx,fixture,design);
+    ctx.restore();
+  }
+  root.LocationProps = Object.freeze({draw, kinds: Object.freeze([...paths.keys()])});
+  if (typeof module === "object" && module.exports) module.exports = root.LocationProps;
+})(globalThis);
+
+</script>
+  <script>
+/* The field guide and game use the same location, fixtures and character selection. */
+(function (root) {
+  "use strict";
+  const designs = root.Locations.designs;
+  const characters = [
+    {name:"Pip", kind:"Survey rover", body:"#e8884b"},
+    {name:"Juniper", kind:"Courier fox", body:"#c87242"},
+    {name:"Rivet", kind:"Clockwork beetle", body:"#69a899"},
+    {name:"Tiller", kind:"Brush turtle", body:"#adc176"},
+    {name:"Mote", kind:"Lantern drone", body:"#e9bf65"},
+    {name:"Moss", kind:"Pond walker", body:"#9db17c"},
+    {name:"Cinder", kind:"Track sweeper", body:"#b391b7"},
+    {name:"Kite", kind:"Survey glider", body:"#76a7bd"}
+  ];
+  const memory = new WeakMap();
+  const PI = Math.PI, TAU = 2 * PI;
+  const mix = (a,b,t) => a+(b-a)*t;
+  const bound = (x,min,max) => Math.max(min, Math.min(max,x));
+  function ink(a,b,t) {
+    const n=parseInt(a.slice(1),16), m=parseInt(b.slice(1),16);
+    const v = shift => Math.round(mix(n >> shift & 255,m >> shift & 255,t));
+    return "rgb(" + [v(16),v(8),v(0)].join(",") + ")";
+  }
+  function noise(seed) {
+    let z = seed | 0;
+    return () => {
+      z = z + 0x6d2b79f5 | 0;
+      let h = Math.imul(z ^ z >>> 15, 1 | z);
+      h ^= h + Math.imul(h ^ h >>> 7, 61 | h);
+      return ((h ^ h >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  const stage = (w,h) => { const c=document.createElement("canvas"); c.width=w; c.height=h; return c; };
+  function poly(g,points,fill,stroke,width=1) {
+    g.beginPath(); g.moveTo(points[0],points[1]);
+    for(let i=2;i<points.length;i+=2) g.lineTo(points[i],points[i+1]);
+    if (fill) { g.closePath(); g.fillStyle=fill; g.fill(); }
+    if (stroke) { g.strokeStyle=stroke; g.lineWidth=width; g.stroke(); }
+  }
+  function oval(g,x,y,rx,ry,col) {
+    g.fillStyle=col; g.beginPath(); g.ellipse(x,y,Math.max(.001,rx),Math.max(.001,ry),0,0,TAU);g.fill();
+  }
+  function rect(g,x,y,w,h,col) {g.fillStyle=col;g.fillRect(x,y,w,h);}
+  function line(g,x,y,xx,yy,col,width) {poly(g,[x,y,xx,yy],null,col,width);}
+  function grad(g,x,y,x2,y2,...colors) {
+    const v=g.createLinearGradient(x,y,x2,y2); colors.forEach((c,i)=>v.addColorStop(i/(colors.length-1),c)); return v;
+  }
+  function ambient(g,d,w,h,t) {
+    const r=noise(d.id*17+151); const count=d.air==="rain"?28:14;
+    g.save();
+    for(let i=0;i<count;i++) {
+      let x=r()*w, y=r()*h; const k=.5+r();
+      x=(w+x+t*.008*k)%w;y=(y+t*(d.air==="snow"?.017:d.air==="rain"?.105:.002)*k)%h;
+      if(d.air==="rain") {line(g,x,y,x-2,y+7,"rgba(238,244,231,.4)",1);continue;}
+      const luminous=["spores","fireflies","stars"].includes(d.air);
+      const a=.22+.32*(.5+.5*Math.sin(t*.0015+i*2.37));
+      g.globalAlpha=a;
+      if(d.air==="leaves") {poly(g,[x,y,x+3.1,y-1,x+1.1,y+1.2],d.colors[5]);}
+      else {oval(g,x,y,luminous?1.6:1.3,luminous?1.6:.8,d.air==="snow"?"#ffffff":d.colors[5]);}
+    }
+    g.restore();
+  }
+  function landscapeRidge(g,d,w,h,depth,r) {
+    const [sky,far,near,floor,dark,light]=d.colors;
+    const color=depth ? near : far, baseline=h*(depth?.58:.51), amp=h*(depth?.17:.24);
+    const step=w/(depth?11:15);
+    let points=[-step,h]; let y=baseline, phase=r()*5;
+    for(let i=-1;i<=Math.ceil(w/step)+1;i++){
+      const x=i*step; const roll=.2+.8*r();
+      const next=baseline-amp*(.22+.23*Math.sin(i*.75+phase)+.45*roll);
+      switch(d.horizon){
+        case "mesa": points.push(x,y,x+step*.08,next,x+step*.68,next,x+step*.9,next+amp*.32);break;
+        case "city": {const high=baseline-amp*roll;points.push(x,y,x,high,x+step*.35,high,x+step*.35,high+amp*.3,x+step*.7,high+amp*.3,x+step*.7,next);break;}
+        case "peaks": case "ice": points.push(x,next+amp*.30,x+step*.66,next-amp*.20);break;
+        case "spires": points.push(x,next+amp*.42,x+step*.23,next+.02*amp,x+step*.32,next-.29*amp,x+step*.51,next+.24*amp);break;
+        case "forest": for(let j=0;j<5;j++){const px=x+step*j/5;points.push(px,next+amp*.19,px+step*.09,next-amp*r()*.32);}break;
+        case "coast":case "marsh":points.push(x,next*.2+baseline*.8,x+step*.5,next*.45+baseline*.55);break;
+        default: for(let j=0;j<4;j++){ const f=j/4;points.push(x+f*step,mix(y,next,(1-Math.cos(f*PI))*.5));}break;
+      }
+      y=next;
+    }
+    points.push(w+step,h);
+    poly(g,points,d.mode===2?grad(g,0,baseline-amp,0,h,color,depth?floor:near):color);
+    if(d.mode===0||d.mode===3) {
+      g.save();g.clip();
+      for(let i=0;i<w/8;i++){let x=r()*w, yy=baseline-r()*amp;line(g,x,yy,x+2+r()*15,yy+(d.horizon==="peaks"?-5:0),"rgba(245,225,178,.25)",1);}
+      g.restore();
+    }
+    if(!depth && ["peaks","ice"].includes(d.horizon)) {
+      for(let i=2;i<points.length-4;i+=4) {
+        const px=points[i+2],py=points[i+3];
+        poly(g,[px-step*.13,py+amp*.14,px,py,px+step*.13,py+amp*.16,px+step*.025,py+amp*.08],ink(light,far,.25));
+      }
+    }
+  }
+  // Offset front and side faces give every structure a consistent light source.
+  function box(g,x,y,w,h,depth,top,front,side) {
+    rect(g,x,y-h,w,h,front);
+    poly(g,[x,y-h,x+depth,y-h-depth*.48,x+w+depth,y-h-depth*.48,x+w,y-h],top);
+    poly(g,[x+w,y-h,x+w+depth,y-h-depth*.48,x+w+depth,y-depth*.48,x+w,y],side);
+  }
+  function sprite(g,index,x,y,s,anim,face=1) {
+    const c=characters[index%characters.length];const outline="#333d39", cream="#f4e5b9", metal="#889c90",rubber="#4e5951";
+    g.save();g.translate(x,y);g.scale(s*face,s);g.lineCap="round";g.lineJoin="round";
+    oval(g,2,12,28,6,"rgba(41,46,36,.24)");
+    const beat=Math.sin(anim);
+    g.translate(0,-Math.abs(beat)*1.15);
+    if(index===0) {
+      // Rounded pressure vessel, two ribbed tracks and the twin-lens rangefinder.
+      for(const [xx,yy] of [[-11,8],[9,11]]) {
+        oval(g,xx,yy,18,7,outline);rect(g,xx-11,yy-5,22,10,rubber);
+        for(let a=-9;a<=11;a+=5)line(g,xx+a,yy+1,xx+a-2,yy+4,metal,1.8);
+      }
+      poly(g,[-30,-5,-22,-15,10,-18,26,-10,29,1,17,8,-15,7,-27,2],c.body,outline,2);
+      poly(g,[-26,-9,-17,-16,8,-18,18,-13,6,-8,-16,-7],cream);
+      poly(g,[10,-7,24,-10,28,-2,26,1,11,5],ink(c.body,outline,.25));
+      rect(g,-16,-9,9,3,outline);line(g,-17,-6,-11,-6,cream,1.4);
+      poly(g,[-9,-17,-5,-30,10,-31,16,-24,15,-16],cream,outline,2);
+      poly(g,[-2,-25,13,-27,15,-20,0,-17],outline);
+      oval(g,3,-22,1.8,2,"#b6dfc5");oval(g,10,-23,1.8,2,"#b6dfc5");
+      line(g,-11,-14,-15,-33,outline,2.2);oval(g,-15,-34,2.7,2.7,c.body);
+      line(g,17,4,25,8,outline,1.6);line(g,19,4,29,6,outline,1.6);
+    } else if(index===1||index===5) {
+      const fox=index===1;
+      for(const [xx,phase] of [[-10,1],[8,-1]]){poly(g,[xx-4,2,xx+5,2,xx+5+beat*phase*2,11,xx+1,13,xx-4,11],outline);}
+      if(fox) {
+        poly(g,[-9,-7,-21,-12,-31,-7,-27,1,-16,5,-8,3],c.body,outline,2);poly(g,[-25,-10,-31,-7,-27,1,-23,2,-21,-3],cream);
+        oval(g,0,-3,14,12,c.body);poly(g,[-10,-9,-13,-25,-1,-20,9,-22,17,-30,17,-16,24,-9,14,-3,0,-4],c.body,outline,2);
+        poly(g,[1,-10,9,-13,16,-10,23,-10,14,-4,4,-4],cream);oval(g,23,-10,2.4,2,outline);oval(g,11,-15,1.8,2,outline);
+        box(g,-16,-3,10,11,3,"#89a99d","#627b6c",outline);
+      } else {
+        oval(g,-1,-3,18,13,c.body);oval(g,7,-14,17,11,c.body);oval(g,2,-23,6,6.5,c.body);oval(g,16,-23,6,6.5,c.body);
+        oval(g,3,-23,2.2,3,outline);oval(g,17,-23,2.2,3,outline);line(g,9,-9,19,-11,outline,1.6);
+        poly(g,[-23,7,-14,-1,-6,5,-13,11,-21,11],c.body,outline,1.5);
+      }
+    } else if(index===2||index===3) {
+      for(let i=-2;i<=2;i++){const xx=i*7;poly(g,[xx-2,1,xx-6,7+beat*(i%2),xx-11,9+beat*(i%2)],null,outline,3);}
+      oval(g,14,-2,10,8,c.body);oval(g,19,-4,2,2,outline);
+      if(index===2){
+        oval(g,-5,-4,20,13,outline);oval(g,-6,-7,18,12,c.body);poly(g,[-17,-8,-10,-15,-1,-17,-7,-6],cream);
+        line(g,-21,-6,10,-8,outline,1.8);line(g,18,-6,25,-14,outline,1.5);line(g,19,-4,28,-8,outline,1.5);
+      }else{
+        oval(g,-5,-5,19,12,"#506b52");poly(g,[-23,-7,-14,-18,0,-21,12,-14,13,-5,3,-1,-15,-1],c.body,outline,2);
+        poly(g,[-11,-12,-4,-17,3,-14,4,-7,-5,-5],null,"#617553",2);line(g,-13,5,-20,11,outline,4);
+      }
+    } else if(index===4||index===7) {
+      const hover=2+Math.sin(anim)*1.7;g.translate(0,-hover);
+      if(index===4){
+        for(const xx of [-18,18]){line(g,xx*.5,-13,xx,-18,outline,2);oval(g,xx,-19,10,1.7,metal);oval(g,xx,-19,2,3,outline);}
+        poly(g,[-11,-15,-6,-21,7,-21,13,-14,11,-2,3,3,-6,1,-11,-5],c.body,outline,2);
+        rect(g,-6,-14,16,5,outline);rect(g,2,-13,5,2,cream);line(g,-6,2,-8,6,outline,2);line(g,6,2,8,6,outline,2);
+      }else{
+        poly(g,[-26,-4,4,-13,27,-11,8,1,-2,1,-13,8,-19,7,-10,-2],c.body,outline,2);
+        poly(g,[-17,-7,-20,-16,-2,-11,2,-9],cream,outline,1.6);poly(g,[0,-10,11,-13,19,-11,8,-8],outline);line(g,-22,-3,-29,-3,cream,2);
+      }
+    }else{
+      oval(g,-1,7,23,7,outline);for(let i=-14;i<17;i+=8)oval(g,i,8,2.7,3,metal);
+      box(g,-18,3,34,14,5,cream,c.body,outline);box(g,-11,-12,15,10,5,metal,c.body,outline);rect(g,-7,-21,7,4,cream);
+      line(g,15,3,27,8,outline,2);line(g,14,4,26,11,outline,2);line(g,12,5,23,13,outline,2);
+    }
+    g.restore();
+  }
+
+  function fixture(g,d,x,y,scale,index,variant=0) {
+    const spec=d.fixtures[index % d.fixtures.length];
+    root.LocationProps.draw(g,spec,x,y,scale,d,variant);
+  }
+
+  function interiorBackdrop(g,d,w,h,preview) {
+    const [sky,far,near,floor,dark,light]=d.colors;
+    const random=noise(d.id+379);
+    const horizon=h*(preview ? .60 : .34);
+    const wall=ink(far,light,.42);
+    rect(g,0,0,w,horizon,grad(g,0,0,w,horizon,wall,ink(far,near,.66)));
+    rect(g,0,horizon,w,h-horizon,grad(g,0,horizon,0,h,ink(near,floor,.38),floor,ink(floor,dark,.2)));
+    const spacing=w/(3+d.id%4), sill=horizon*(.60+random()*.13);
+    if(d.region==="industrial"){
+      for(let x=-spacing;x<w+spacing;x+=spacing){
+        poly(g,[x,0,x+spacing*.12,0,x+spacing*.13,horizon,x,horizon],near);
+        line(g,x,0,x+spacing,sill,ink(near,dark,.35),Math.max(1,w*.008));
+        line(g,x,sill,x+spacing,0,ink(near,dark,.35),Math.max(1,w*.008));
+        rect(g,x+spacing*.18,horizon*.18,spacing*.62,horizon*.35,ink(sky,light,.6));
+        line(g,x+spacing*.5,horizon*.18,x+spacing*.5,horizon*.53,near,1.5);
+      }
+    }else{
+      for(let x=-spacing*.4;x<w;x+=spacing){
+        const wx=x+spacing*.23, ww=spacing*.55, top=horizon*.15;
+        rect(g,wx-3,top-3,ww+6,sill-top+7,ink(near,dark,.33));
+        rect(g,wx,top,ww,sill-top,grad(g,0,top,0,sill,sky,light));
+        line(g,wx+ww*.52,top,wx+ww*.52,sill,near,2);
+        line(g,wx,(sill+top)*.52,wx+ww,(sill+top)*.52,near,1.4);
+        rect(g,wx-5,sill,ww+10,3.3,light);
+        poly(g,[wx,sill+1,wx+ww,sill+1,wx+ww*.2,horizon+h*.20,wx-ww*.5,horizon+h*.20],"rgba(252,234,179,.15)");
+      }
+    }
+    // The far wall changes with the building. These structures use the same
+    // camera horizon as the fixture sprites on the playable floor.
+    const shadow=ink(near,dark,.48),trim=ink(far,light,.54);
+    if(d.category==="cave"){
+      rect(g,0,0,w,horizon,grad(g,0,0,0,horizon,dark,near,far));
+      for(let i=0;i<6;i++){
+        const left=i*w/5-w*.11,hh=horizon*(.36+random()*.45);
+        poly(g,[left,0,left+w*.19,0,left+w*.14,hh*.31,left+w*.10,hh,left+w*.065,hh*.50],
+          i%2?shadow:near);
+      }
+      const cx=w*(.50+random()*.12);
+      g.fillStyle=dark;g.beginPath();g.arc(cx,horizon,horizon*.65,Math.PI,Math.PI*2);g.fill();
+      poly(g,[cx-horizon*.42,horizon,cx-horizon*.34,horizon*.59,cx-horizon*.08,horizon*.49,
+        cx+horizon*.18,horizon*.57,cx+horizon*.30,horizon],shadow);
+      line(g,0,horizon*.28,w,horizon*.18,shadow,2);
+      for(let i=0;i<4;i++){const x=w*(.12+i*.25);line(g,x,horizon*.25,x,horizon*.41,dark,1.6);
+        oval(g,x,horizon*.42,w*.011,w*.009,"#f2d487");}
+    }else if(d.category==="stacks"||d.category==="shop"){
+      const count=d.category==="stacks"?4:3;
+      for(let bay=0;bay<count;bay++){
+        const x=w*(.025+bay/count), y=horizon*.21,bw=w*(.75/count),bh=horizon*.74;
+        rect(g,x,y,bw,bh,shadow);rect(g,x+2,y+2,bw-4,bh-4,near);
+        for(let shelf=0;shelf<3;shelf++){
+          const baseline=y+bh*(.31+shelf*.32);
+          let cursor=x+bw*.06;
+          while(cursor<x+bw*.88){
+            const bw2=bw*(.035+.055*random()),bh2=bh*(.10+.16*random());
+            rect(g,cursor,baseline-bh2,bw2,bh2,[far,trim,floor,dark][Math.floor(random()*4)]);
+            cursor+=bw2+bw*.012;
+          }
+          rect(g,x,baseline,bw,Math.max(1,bh*.022),trim);
+        }
+      }
+    }else if(d.category==="glass"){
+      for(let i=-4;i<11;i++)line(g,w*.5,-horizon*.52,i*w*.12,horizon,trim,2);
+      line(g,0,horizon*.51,w,horizon*.51,trim,2.3);
+      for(let i=0;i<13;i++){
+        const x=i*w/12,y=horizon*(.85+random()*.13);
+        for(let j=-2;j<=2;j++){
+          const height=horizon*(.12+random()*.22);
+          poly(g,[x,y,x+j*w*.012-w*.008,y-height*.7,x+j*w*.023,y-height,x+j*w*.012,y-height*.42],near);
+        }
+      }
+    }else if(d.category==="arena"||d.category==="lab"){
+      for(let i=0;i<5;i++){
+        const x=(i+.3)*w/5;
+        rect(g,x,horizon*.10,w*.09,3,light);
+        if(d.category==="lab"){
+          box(g,x-w*.03,horizon,w*.15,horizon*.28,w*.012,trim,near,shadow);
+          line(g,x,horizon*.75,x,horizon*.97,trim,1.4);
+          rect(g,x+w*.075,horizon*.77,w*.016,2,dark);
+        }else{
+          for(let step=0;step<3;step++)
+            rect(g,x-w*.09,horizon*(.68+step*.12),w*.19,horizon*.08,step%2?near:shadow);
+        }
+      }
+    }else if(d.category==="foundry"){
+      for(let i=0;i<3;i++){
+        const x=w*(.14+i*.35),ht=horizon*(.35+.16*random());
+        box(g,x-w*.055,horizon,w*.11,ht,w*.018,trim,near,shadow);
+        rect(g,x-w*.035,horizon-ht*.55,w*.066,ht*.41,dark);
+        rect(g,x-w*.027,horizon-ht*.28,w*.05,ht*.14,"#d39564");
+      }
+    }
+    rect(g,0,horizon-3,w,4,ink(near,dark,.40));
+    for(let i=-5;i<13;i++) line(g,w*.53,horizon,i*w*.15,h,ink(floor,near,.40),.55);
+    for(let j=1;j<7;j++){
+      const yy=horizon+(h-horizon)*(j/7)**1.75;
+      line(g,0,yy,w,yy,ink(floor,light,.34),.7);
+    }
+  }
+
+  function outdoorBackdrop(g,d,w,h,preview) {
+    const [sky,far,near,ground,dark,light]=d.colors;
+    const horizon=h*(preview?.64:.33),r=noise(d.id*17+349);
+    rect(g,0,0,w,h,grad(g,0,0,0,h,sky,ink(sky,light,.72),ground));
+    const sx=w*(.16+.65*r()), sy=horizon*(.24+.15*r()),sz=Math.min(w,h)*.074;
+    oval(g,sx,sy,sz,sz,light);
+    for(let i=0;i<8;i++){
+      const x=r()*w,y=r()*horizon*.5,ww=(.04+.08*r())*w;
+      poly(g,[x,y,x+ww*.18,y-1.2,x+ww*.34,y-4,x+ww*.57,y-3,
+        x+ww*.7,y-1,x+ww,y+1,x+ww*.22,y+1],"rgba(248,244,220,.50)");
+    }
+    g.save();g.scale(1,horizon/(h*.57));landscapeRidge(g,d,w,h,0,r);landscapeRidge(g,d,w,h,1,r);g.restore();
+    rect(g,0,horizon,w,h-horizon,grad(g,0,horizon,0,h,ink(ground,far,.32),ground,ink(ground,near,.25)));
+    const water=["coast","water"].includes(d.region);
+    if(water) {
+      const waterline=horizon+(h-horizon)*.20;
+      rect(g,0,horizon,w,waterline-horizon,ink(sky,near,.33));
+      for(let i=0;i<32;i++) {
+        const x=r()*w, y=horizon+r()*(waterline-horizon);
+        line(g,x,y,x+r()*w*.07,y,ink(sky,light,.36),.8);
+      }
+    }
+    for(let i=0;i<65;i++){
+      const x=r()*w,y=horizon+r()*(h-horizon);
+      line(g,x,y,x+2+r()*w*.035,y+r()*.9,ink(ground,near,.35),.7);
+    }
+    if(d.region==="urban"){
+      for(let i=0;i<9;i++){
+        const x=i*w/8-w*.025, ht=horizon*(.16+.45*r());
+        box(g,x,horizon,w*.075,ht,w*.016,light,near,ink(near,dark,.45));
+        for(let xx=0;xx<3;xx++)for(let yy=0;yy<3;yy++)
+          rect(g,x+w*(.008+xx*.019),horizon-ht*(.81-yy*.25),w*.01,ht*.11,ink(light,near,.38));
+      }
+    }
+  }
+
+  function roomTrim(g,d,w,h,preview) {
+    const [,far,near,,dark,light]=d.colors;
+    const horizon=h*(preview?.60:.34), unit=horizon/104;
+    const edge=ink(near,dark,.48), molding=ink(far,light,.62);
+    // Rails and panelling wrap behind the furnished floor. The roof defines the venue.
+    g.save();g.scale(unit,unit);
+    const width=w/unit;
+    if(d.category==="salon" || d.category==="stage"){
+      const cafe=d.category==="salon", fabric=cafe?"#aa5646":"#875568";
+      rect(g,0,0,width,13,fabric);
+      for(let x=-10;x<width+12;x+=22) {
+        rect(g,x,0,11,12,cafe?light:near);
+        poly(g,[x,11,x+11,11,x+11,15,x+7,18,x+3,18,x,15],cafe?light:near);
+        poly(g,[x+11,11,x+22,11,x+22,15,x+18,18,x+14,18,x+11,15],fabric);
+      }
+      rect(g,0,75,width,27,edge);
+      for(let x=-5;x<width;x+=19){
+        rect(g,x+1,79,16,20,near);
+        line(g,x+2,80,x+16,80,molding,.65);
+      }
+      rect(g,0,73,width,3,molding);rect(g,0,99,width,4,dark);
+    }else if(d.category!=="cave") {
+      rect(g,0,0,width,4,edge);rect(g,0,4,width,1.5,molding);
+      rect(g,0,99,width,3,edge);rect(g,0,102,width,1.2,molding);
+    }
+    if(["salon","stacks","stage","shop","foundry"].includes(d.category)){
+      const count=2+d.id%3;
+      for(let i=0;i<count;i++){
+        const x=(i+.5)*width/count, cord=13+(i+d.id)%3*3;
+        line(g,x,0,x,cord,dark,1.2);
+        oval(g,x,cord+5,5,4.5,"#ffda93");
+        poly(g,[x-10,cord+4,x-5,cord-2,x-2,cord-4,x+2,cord-4,x+5,cord-2,x+10,cord+4],edge);
+        line(g,x-9,cord+4,x+9,cord+4,molding,1);
+      }
+    }
+    g.restore();
+  }
+
+  function landscapeLandmarks(g,d,w,h,preview) {
+    const [sky,far,near,ground,dark,light]=d.colors;
+    const horizon=h*(preview?.64:.33), unit=horizon/93, width=w/unit, r=noise(902+d.id*31);
+    const edge=ink(near,dark,.42), roof=ink(near,far,.35), sunlit=ink(far,light,.60);
+    g.save();g.scale(unit,unit);
+    const baseline=91;
+    const reflected= ink(sky,light,.30);
+    if(["coast","water"].includes(d.region)){
+      const left=width*(.17+.17*r());
+      if(d.region==="water"){
+        // River mouths and inland lakes have tree-lined banks instead of an open sea.
+        const lake=/lake|rowing/i.test(d.name), marsh=d.category==="wetland";
+        for(let i=-1;i<30;i++){
+          const x=(i+r()*.55)*width/28, tall=(lake?9:5)+r()*(lake?13:7);
+          const shade=ink(near,far,r()*.44);
+          if(lake){
+            poly(g,[x-tall*.37,baseline-2,x,baseline-tall,x+tall*.36,baseline-2],shade);
+            poly(g,[x-tall*.16,baseline-1,x,baseline-tall*.48,x+tall*.26,baseline-1],near);
+            line(g,x,baseline+2,x,baseline+2+tall*.23,ink(sky,near,.37),1.5);
+          }else if(marsh){
+            for(let j=-2;j<=2;j++)
+              poly(g,[x-1.5,baseline+1,x+j*2,baseline-tall*(1-Math.abs(j)*.18),x+1.5,baseline+1],shade);
+          }else{
+            oval(g,x,baseline-tall*.32,tall*.72,tall*.65,shade);
+            rect(g,x-1,baseline-tall*.44,2,tall*.44,near);
+          }
+        }
+        if(lake){
+          const x=width*.22;
+          rect(g,x-18,baseline-9,35,8,ink(ground,near,.43));
+          poly(g,[x-21,baseline-9,x-5,baseline-20,x+15,baseline-17,x+22,baseline-9],"#98695a");
+          rect(g,x-4,baseline-8,11,7,edge);
+          line(g,x-19,baseline+1,x+26,baseline+1,roof,2);
+        }else if(!marsh){
+          const x=width*.55;
+          for(let i=0;i<4;i++){
+            const px=x+i*6;
+            rect(g,px,baseline-9,1,9,edge);
+          }
+          line(g,x-6,baseline-9,x+25,baseline-9,edge,1.3);
+          line(g,x-6,baseline-5,x+25,baseline-5,edge,1.6);
+        }
+      }else if(d.category==="pier"){
+        // Hoists and pilings give the salvage and ferry docks an industrial shore.
+        for(let i=0;i<3;i++){
+          const x=(i*.28+.10+r()*.05)*width,y=baseline-1,ht=10+r()*12;
+          poly(g,[x-5,y,x-2,y-ht,x+1,y-ht,x+4,y],edge);
+          line(g,x-5,y-ht,x+19,y-ht-6,edge,1.4);
+          line(g,x-1,y-ht-8,x+19,y-ht-6,near,.95);
+          line(g,x+16,y-ht-5,x+16,y-ht+3,near,1);
+          rect(g,x+14,y-ht+3,4,2,edge);
+        }
+        for(let i=0;i<7;i++){const x=left-24+i*9;rect(g,x,baseline+3,1.7,5+(i%2),edge);}
+        rect(g,left-27,baseline+2,61,2,roof);
+        for(let i=0;i<3;i++){
+          const x=width*(.32+i*.26)+r()*7, y=baseline+6+i%2*2;
+          poly(g,[x-2,y,x-1,y-4,x+1,y-4,x+2,y],"#bf7456");
+          line(g,x-4,y+1,x+4,y+1,reflected,.9);
+        }
+      }else{
+        for(let i=0;i<3;i++){
+          const x=width*(.39+i*.20)+r()*7,y=baseline+4+i%2*2,k=.60+r()*.25;
+          poly(g,[x-9*k,y,x+9*k,y,x+5*k,y+3*k,x-6*k,y+3*k],edge);
+          line(g,x,y,x,y-16*k,edge,.9);
+          poly(g,[x-1,y-15*k,x-1,y-1,x-7*k,y-1],sunlit);
+          line(g,x-7*k,y+5*k,x+6*k,y+5*k,reflected,.8);
+        }
+        const x=left,towerHeight=21+r()*6;
+        poly(g,[x-3,baseline,x-1.8,baseline-towerHeight,x+1.6,baseline-towerHeight,x+3.6,baseline],light);
+        rect(g,x-2,baseline-towerHeight,4,4,edge);rect(g,x-3,baseline-towerHeight,6,.9,light);
+        poly(g,[x-3.4,baseline-towerHeight,x,baseline-towerHeight-3,x+3.4,baseline-towerHeight],near);
+        rect(g,x-2.6,baseline-towerHeight*.52,5.1,2.8,"#af6751");
+      }
+    }else if(["woodland","mountain"].includes(d.region)){
+      for(let i=0;i<8;i++){
+        const x=(i+.24+r()*.38)*width/8,y=baseline-1+r()*4, tall=8+r()*14;
+        rect(g,x-1,y-tall*.5,1.6,tall*.5,edge);
+        if(d.category==="alpine"||d.category==="ice"||d.category==="forest"){
+          for(let k=0;k<3;k++){
+            const base=y-tall*.16-k*tall*.18,rad=tall*(.23-k*.037);
+            poly(g,[x-rad,base,x,base-tall*.48,x+rad,base],k%2?near:edge);
+          }
+        }else{
+          oval(g,x-2,y-tall*.62,tall*.28,tall*.32,near);
+          oval(g,x+2,y-tall*.73,tall*.26,tall*.29,roof);
+        }
+      }
+      if(d.category==="farm"){
+        const x=width*.73,y=baseline-2;
+        poly(g,[x-6,y,x-3,y-21,x+3,y-21,x+6,y],sunlit);
+        const dx=x,dy=y-17;
+        for(let k=0;k<4;k++){g.save();g.translate(dx,dy);g.rotate(k*PI/2+.3);
+          poly(g,[0,-1,12,-1,13,-3,15,-3,14,1,0,1],edge);g.restore();}
+      }
+    }else if(d.region==="desert"){
+      for(let i=0;i<5;i++){
+        const x=(i+r()*.6)*width/5,y=baseline+3+r()*2,tall=9+r()*10;
+        poly(g,[x-8,y,x-5,y-7,x-2,y-8,x+1,y-tall,x+5,y-tall+1,x+8,y-5,x+12,y],near);
+        poly(g,[x+1,y-tall,x+4,y-tall+1,x+6,y-4,x+3,y],roof);
+      }
+    }else{
+      const skyline= d.region==="industrial";
+      for(let i=0;i<5;i++){
+        const x=(i+.3+r()*.45)*width/5,y=baseline,tall=10+r()*6;
+        if(skyline){
+          line(g,x,y,x,y-tall-7,edge,2);line(g,x-6,y-tall-7,x+16,y-tall-7,edge,1.2);
+          line(g,x,y-tall-12,x+16,y-tall-7,edge,.85);line(g,x+13,y-tall-6,x+13,y-tall,edge,.65);
+        }else{
+          line(g,x,y,x,y-tall,edge,1.2);poly(g,[x-2,y-tall-3,x+2,y-tall-3,x+1,y-tall,x-1,y-tall],sunlit);
+          line(g,x-2,y-tall-3,x+2,y-tall-3,edge,1);
+        }
+      }
+    }
+    g.restore();
+  }
+
+  function sceneBackdrop(g,d,w,h,preview) {
+    if(d.indoors) interiorBackdrop(g,d,w,h,preview);
+    else outdoorBackdrop(g,d,w,h,preview);
+    if(!d.indoors) landscapeLandmarks(g,d,w,h,preview);
+    if(d.indoors) roomTrim(g,d,w,h,preview);
+    if(preview){
+      const scale=Math.min(w/330,h/230);
+      fixture(g,d,w*.74,h*.79,scale*1.72,0,3);
+      fixture(g,d,w*.91,h*.84,scale*.94,1,2);
+      fixture(g,d,w*.14,h*.75,scale*1.1,2,1);
+    }
+  }
+
+  function drawSprite(g,d,index,x,y,scale,anim,face) {
+    sprite(g,index,x,y,scale,anim,face);
+  }
+
+  function rhombus(g,x,y,hw,hh,fill,stroke) {
+    poly(g,[x,y-hh,x+hw,y,x,y+hh,x-hw,y,x,y-hh],fill,stroke,.8);
+  }
+
+  // Eight variants of the same physical surface avoid a repeating stamp on large boards.
+  function floorAtlas(d) {
+    const floors=[],[, ,near,ground,,light]=d.colors;
+    for(let i=0;i<8;i++){
+      const tile=stage(100,55), g=tile.getContext("2d"), r=noise(d.id*47+i*319+101);
+      rhombus(g,50,27,50,27,ink(ground,i%3===1?light:near,.04+r()*.08));
+      g.save();g.clip();
+      const soft=ink(ground,near,.22),pale=ink(ground,light,.30);
+      if(["brick","tile","iron","deck","slate","wood","concrete","marble"].includes(d.surface)){
+        for(let j=-2;j<5;j++){
+          const offset=j*17+(i%2)*4;
+          line(g,0,offset,100,offset+53,soft,1);
+          if(["brick","tile","marble"].includes(d.surface)) line(g,36,offset+18,52,offset+10,soft,.9);
+          if(d.surface==="deck"||d.surface==="wood")line(g,62,offset+33,70,offset+36,pale,1);
+        }
+      }else{
+        for(let j=0;j<19;j++){
+          const xx=r()*100,yy=r()*55,ww=1+r()*7;
+          if(["grass","mud","moss","snow"].includes(d.surface))
+            poly(g,[xx-2,yy-2,xx+1,yy,xx+2,yy-3],null,j%3?soft:pale,.75);
+          else line(g,xx,yy,xx+ww,yy+(r()-.5)*2,j%3?soft:pale,.7);
+        }
+      }
+      if(d.mode===3){
+        // The torn top and shadowed fold give the paper tiles a layered edge.
+        poly(g,[1,27,49,1,54,3,96,26,90,24,53,5,48,3],ink(ground,light,.44));
+        poly(g,[2,28,49,52,99,27,93,32,49,54],ink(ground,near,.36));
+      }else if(d.mode===1){
+        for(let j=0;j<5;j++)rect(g,Math.round(r()*25)*4,Math.round(r()*14)*4,2,1,j%4?soft:pale);
+      }
+      poly(g,[0,27,50,54,100,27],null,ink(ground,near,.34),1);
+      g.restore();floors.push(tile);
+    }
+    return floors;
+  }
+
+  function projection(s,d,w,h,options={}) {
+    const size=s.size,span=Math.min(size,9);
+    let col=s.position%size,row=Math.floor(s.position/size);
+    let face=options.face??1;
+    const from=options.moveFrom;
+    if(Number.isInteger(from)&&from>=0&&Math.abs(from%size-col)+Math.abs(Math.floor(from/size)-row)===1){
+      const fromCol=from%size,fromRow=Math.floor(from/size);
+      face=(col-fromCol)-(row-fromRow)>0?1:-1;
+      const amount=options.motion===false?1:bound(options.moveProgress??1,0,1);
+      col=mix(fromCol,col,amount);row=mix(fromRow,row,amount);
+    }
+    const margin=(span-1)/2,cc=bound(col,margin,size-1-margin),rr=bound(row,margin,size-1-margin);
+    const overviewSide=Math.min(w*.23,h*.22,126);
+    const mini=size>9?{x:w-overviewSide-9,y:9,side:overviewSide}:null;
+    const hw=Math.min(w*.45/span,h*.34/(span*.53));
+    const hh=hw*.53,px=w*.5-(cc-rr)*hw,py=h*.56-(cc+rr)*hh;
+    const perspectiveStage=d.mode===2;
+    const widthPerCell=Math.min(w*.82,h*1.65)/span, depthPerCell=h*.40/span, cy=h*.68;
+    function point(c,r){
+      if(!perspectiveStage)return [px+(c-r)*hw,py+(c+r)*hh];
+      const depth=r-rr,perspective=1-.58*depth/span;
+      return [w*.5+(c-cc)*widthPerCell/perspective,cy+depth*depthPerCell/perspective];
+    }
+    function world(x,y){
+      if(!perspectiveStage){
+        const across=(x-px)/hw,down=(y-py)/hh;
+        return [(down+across)/2,(down-across)/2];
+      }
+      const dy=y-cy;
+      const depth=dy/(depthPerCell+.58*dy/span);
+      return [cc+(x-w*.5)*(1-.58*depth/span)/widthPerCell,rr+depth];
+    }
+    function radius(r){ return perspectiveStage?widthPerCell*.49/(1-.58*(r-rr)/span):hw; }
+    const horizon=perspectiveStage ? Math.max(0,point(cc,rr-span*.52)[1]) : 0;
+    const bottom=h;
+    function within(x,y){return x>=0&&x<w&&y>=horizon-.1&&y<bottom;}
+    const corners=[[0,horizon],[w,horizon],[0,bottom],[w,bottom]].map(([x,y])=>world(x,y));
+    const minCol=bound(Math.floor(Math.min(...corners.map(p=>p[0])))-2,0,size-1);
+    const maxCol=bound(Math.ceil(Math.max(...corners.map(p=>p[0])))+2,0,size-1);
+    const minRow=bound(Math.floor(Math.min(...corners.map(p=>p[1])))-1,0,size-1);
+    const maxRow=bound(Math.ceil(Math.max(...corners.map(p=>p[1])))+1,0,size-1);
+    return {w,h,size,col,row,face,cc,rr,hw,hh,point,world,radius,within,mini,perspectiveStage,
+      horizon,minCol,maxCol,minRow,maxRow};
+  }
+
+  function cellOutline(g,view,col,row,fill,stroke,weight=1) {
+    const {point}=view;
+    const points=[point(col-.5,row-.5),point(col+.5,row-.5),point(col+.5,row+.5),
+      point(col-.5,row+.5),point(col-.5,row-.5)].flat();
+    poly(g,points,fill,stroke,weight);
+  }
+
+  function visibleCells(view,s) {
+    const cells=[];
+    for(let row=view.minRow;row<=view.maxRow;row++){
+      for(let col=view.minCol;col<=view.maxCol;col++){
+        const [x,y]=view.point(col,row),hw=view.radius(row);
+        if(x< -hw || x>view.w+hw || y<view.horizon-hw*.38 || y>view.h+hw)continue;
+        const id=row*s.size+col;
+        const variant=(Math.imul(id+7,24593)^(s.levelSeed>>>8)^Math.imul(row,5))&7;
+        cells.push({id,col,row,x,y,hw,variant});
+      }
+    }
+    cells.sort((a,b)=>a.y-b.y || a.x-b.x);
+    return cells;
+  }
+
+  function floorLayer(g,s,d,view,cache,cells) {
+    const [,far,near,ground,dark,light]=d.colors;
+    const rim=ink(near,dark,.56), rimLight=ink(ground,light,.44);
+    g.drawImage(cache.backdrop,0,0,view.w,view.h);
+    // The tray casts one soft shadow. All tile edges, bases and fixtures share its light.
+    if(s.size<=9) {
+      const last=s.size-.5, offset=view.radius(view.rr)*.16;
+      const corners=[[-.5,-.5],[last,-.5],[last,last],[-.5,last]].map(([col,row])=>view.point(col,row));
+      for(let layer=3;layer>=1;layer--){
+        const drift=offset*(.7+layer*.27);
+        const vertices=corners.flatMap(([x,y])=>[x+drift,y+offset*1.25+drift*.6]);
+        poly(g,vertices,"rgba(34,44,39,.075)");
+      }
+    }
+    g.save();
+    if(view.perspectiveStage){
+      g.beginPath();g.rect(0,view.horizon,view.w,view.h-view.horizon);g.clip();
+    }
+    for(const item of cells){
+      const {col,row,x,y,hw,variant}=item, hh=view.hh;
+      const depth=Math.max(3,hw*(d.mode===3?.20:.145));
+      if(view.perspectiveStage){
+        const pt=(a,b)=>view.point(col+a,row+b);
+        const lr=pt(.5,.5),ll=pt(-.5,.5);
+        if(row===s.size-1)poly(g,[...ll,...lr,lr[0],lr[1]+depth,ll[0],ll[1]+depth],rim);
+        const flat=ink(ground,variant%2?light:far,.035+variant*.018);
+        cellOutline(g,view,col,row,flat,ink(ground,near,.52),Math.max(.7,hw*.025));
+        // Perspective joints follow the vanishing point so the floor reads as a model.
+        if(["wood","deck","brick","iron","tile"].includes(d.surface)){
+          for(const offset of [-.21,.22]){
+            const p1=pt(-.49,offset),p2=pt(.49,offset);
+            line(g,...p1,...p2,ink(ground,near,.24),Math.max(.5,hw*.022));
+          }
+          const joint=(variant%3-1)*.22;
+          line(g,...pt(joint,-.47),...pt(joint,-.22),ink(ground,near,.26),Math.max(.5,hw*.024));
+        }else{
+          const fold=(variant-3)*.05;
+          poly(g,[...pt(-.49,-.45),...pt(.48,-.42),...pt(.49,fold),...pt(-.35,fold+.14)],ink(ground,far,.10));
+        }
+        line(g,...pt(-.45,-.45),...pt(.45,-.45),rimLight,Math.max(.6,hw*.028));
+      }else{
+        if(col===s.size-1)poly(g,[x+hw,y,x,y+hh,x,y+hh+depth,x+hw,y+depth],rim);
+        if(row===s.size-1)poly(g,[x-hw,y,x,y+hh,x,y+hh+depth,x-hw,y+depth],ink(ground,near,.78));
+        if(d.mode===3 && (col===s.size-1||row===s.size-1)) {
+          const side=col===s.size-1?1:-1;
+          line(g,x,y+hh+depth*.55,x+side*hw,y+depth*.55,rimLight,Math.max(.7,hw*.026));
+        }
+        g.drawImage(cache.floors[variant],x-hw-.25,y-hh-.25,hw*2+.5,hh*2+.5);
+      }
+      if(s.walls[item.id]){
+        cellOutline(g,view,col,row,"rgba(44,58,51,.19)",ink(ground,near,.62),.9);
+      }
+    }
+    g.restore();
+  }
+
+  function staticMap(s,d) {
+    const c=stage(s.size,s.size),g=c.getContext("2d");
+    rect(g,0,0,s.size,s.size,ink(d.colors[3],d.colors[5],.52));
+    const dirty=[];
+    for(let id=0;id<s.walls.length;id++){
+      if(!s.walls[id]&&!s.truth[id])continue;
+      g.fillStyle=s.walls[id]?d.colors[4]:"#a53e26";
+      g.fillRect(id%s.size,Math.floor(id/s.size),1,1);
+      if(s.truth[id]) dirty.push(id);
+    }
+    return {terrain:c,dirty};
+  }
+
+  function overview(g,s,d,view,cache) {
+    const mini=view.mini;if(!mini)return;
+    if(cache.miniRemaining!==s.dirtRemaining){
+      cache.overview=staticMap(s,d);cache.miniRemaining=s.dirtRemaining;
+    }
+    const {x,y,side}=mini,scale=side/s.size, pad=3;
+    const coords=id=>[x+(id%s.size+.5)*scale,y+(Math.floor(id/s.size)+.5)*scale];
+    g.save();g.imageSmoothingEnabled=false;
+    rect(g,x-pad-1,y-pad-1,side+pad*2+2,side+pad*2+2,"#26332d");
+    rect(g,x-pad,y-pad,side+pad*2,side+pad*2,"#faf2dc");
+    g.drawImage(cache.overview.terrain,x,y,side,side);
+    if(scale<3.5) {
+      for(const id of cache.overview.dirty) {
+        const [mx,my]=coords(id);
+        oval(g,mx,my,2.4,2.4,"#ffe4a2");oval(g,mx,my,1.6,1.6,"#a43b23");
+      }
+    }
+    if(Number.isInteger(s.targetCell)){
+      const [mx,my]=coords(s.targetCell),r=Math.max(3.4,scale*.57);
+      g.strokeStyle="#137b78";g.lineWidth=1.6;g.strokeRect(mx-r,my-r,r*2,r*2);
+    }
+    const px=x+(view.col+.5)*scale,py=y+(view.row+.5)*scale;
+    oval(g,px,py,3.4,3.4,"#fff6dd");oval(g,px,py,2.4,2.4,"#164f51");g.restore();
+  }
+
+  function dustStamp(d,id,seed) {
+    const c=stage(84,46),g=c.getContext("2d"),r=noise(Math.imul(id+1,7919)^seed);
+    const leaves=["grass","moss","mud"].includes(d.surface);
+    const gravel=["sand","stone","slate","shell","ice"].includes(d.surface);
+    const dark=leaves?"#493b28":gravel?"#493b36":"#553929",mid=leaves?"#866332":gravel?"#956f56":"#af7645";
+    const gold=leaves?"#e2b95b":"#e7b882";
+    g.translate(42,23);g.rotate((r()-.5)*.26);g.lineJoin="round";
+    // An irregular, grounded clump is visible before the first inspection.
+    // Its shape is a function of the venue and cell, independent of the scanner.
+    oval(g,1,3,27,10,"rgba(60,46,36,.20)");
+    for(let i=0;i<5;i++){
+      const x=(i-2)*7+(r()-.5)*5,y=(r()-.5)*6,rx=5+r()*4,ry=3+r()*3;
+      poly(g,[x-rx,y,x-rx*.5,y-ry,x+rx*.55,y-ry*.8,x+rx,y+.5,
+        x+rx*.25,y+ry,x-rx*.67,y+ry*.65],i%2?dark:mid,dark,1.4);
+      if(leaves)line(g,x-rx*.65,y+ry*.45,x+rx*.57,y-ry*.5,gold,1.5);
+      if(gravel)poly(g,[x-rx*.6,y-ry*.35,x-rx*.4,y-ry,x+rx*.5,y-ry*.7,x,y-ry*.1],gold);
+      if(!gravel&&!leaves)oval(g,x-rx*.2,y-ry*.4,1.9,1,gold);
+    }
+    for(let i=0;i<7;i++){
+      const a=(i+r()*.50)*TAU/7,dist=.67+r()*.26;
+      const x=Math.cos(a)*32*dist,y=Math.sin(a)*13*dist,rx=1.5+r()*1.45;
+      oval(g,x,y,rx,rx*.75,i%3?dark:mid);
+    }
+    return c;
+  }
+
+  function drawDust(g,d,item,cache,s) {
+    const variant=(item.id^(item.id>>>4))&15;
+    if(!cache.dust.has(variant)) cache.dust.set(variant,dustStamp(d,variant,s.levelSeed));
+    const width=item.hw*1.39, height=width*46/84;
+    g.drawImage(cache.dust.get(variant),item.x-width*.5,item.y-height*.5,width,height);
+  }
+
+  function drawObject(g,s,d,item,cache) {
+    const spec=root.Locations.fixtureAt(d.id,item.id,s.size);
+    const key=spec.kind+"/"+spec.name+"/"+(item.variant%3);
+    let c=cache.fixtures.get(key);
+    if(!c){
+      const pixel=d.mode===1;
+      c=stage(pixel?68:136,pixel?70:140);
+      const cg=c.getContext("2d"),scale=c.width/68;
+      cg.scale(scale,scale);
+      root.LocationProps.draw(cg,spec,34,53,1.32,d,item.variant%3);
+      cache.fixtures.set(key,c);
+    }
+    const width=item.hw*(d.mode===2?2.2:1.8),height=width*c.height/c.width;
+    if(d.mode===2){
+      g.save();g.translate(item.x,item.y);g.rotate(-.12);
+      const contact=g.createRadialGradient(0,0,1,0,0,width*.30);
+      contact.addColorStop(0,"rgba(15,15,12,.53)");contact.addColorStop(1,"rgba(15,15,12,0)");
+      g.scale(1,.24);oval(g,width*.06,0,width*.35,width*.34,contact);g.restore();
+    }
+    g.drawImage(c,item.x-width*.5,item.y-height*(53/70),width,height);
+  }
+
+  function drawField(g,s,d,cache,w,h,time,options) {
+    const view=projection(s,d,w,h,{...options,face:cache.face}), cells=visibleCells(view,s);
+    cache.face=view.face;cache.view=view;
+    if(cache.floorCol!==view.cc || cache.floorRow!==view.rr) {
+      floorLayer(cache.floorLayer.getContext("2d"),s,d,view,cache,cells);
+      cache.floorCol=view.cc;cache.floorRow=view.rr;
+    }
+    g.drawImage(cache.floorLayer,0,0,w,h);
+    if(s.route.length && s.phase==="move"){
+      g.save();g.lineCap="round";g.lineJoin="round";
+      const weight=Math.max(1.2,view.radius(view.row)*.058);
+      g.setLineDash([weight*1.8,weight*2.2]);g.lineWidth=weight;
+      g.strokeStyle="#28736c";
+      g.beginPath();g.moveTo(...view.point(view.col,view.row));
+      for(let i=s.routeIndex+1;i<s.route.length;i++){
+        const cell=s.route[i],row=Math.floor(cell/s.size);
+        if(row<view.minRow-1||row>view.maxRow+1)break;
+        g.lineTo(...view.point(cell%s.size,row));
+      }
+      g.stroke();g.restore();
+    }
+    for(const item of cells){
+      if(s.truth[item.id]) drawDust(g,d,item,cache,s);
+      // A teal cell border denotes the user's instruction, including on bare floor.
+      const hover=s.phase==="select" && options.hoverCell===item.id;
+      if(item.id===s.targetCell || hover){
+        const blocked=Boolean(s.walls[item.id]),weight=Math.max(1.5,item.hw*.053);
+        cellOutline(g,view,item.col,item.row,null,blocked?"#764e49":"#ffeed2",weight+1.8);
+        cellOutline(g,view,item.col,item.row,null,blocked?"#864e46":"#20766e",weight);
+      }
+    }
+    const [px,py]=view.point(view.col,view.row), playerWidth=view.radius(view.row);
+    const foreground=cells.filter(i=>s.walls[i.id]);foreground.push({x:px,y:py,avatar:true});
+    foreground.sort((a,b)=>a.y-b.y);
+    for(const item of foreground){
+      if(!item.avatar){drawObject(g,s,d,item,cache);continue;}
+      const bodyScale=playerWidth*(view.perspectiveStage?.032:.027);
+      if(["scan","sensor","bayes"].includes(s.phase)){
+        const pulse=.48+(.5+.5*Math.sin(time*.007))*.24;
+        g.save();g.strokeStyle="#e9fff4";g.lineWidth=Math.max(1.4,playerWidth*.046);
+        g.beginPath();g.ellipse(px,py,playerWidth*pulse,playerWidth*pulse*.43,0,0,TAU);g.stroke();g.restore();
+      }
+      if(s.phase==="result" && s.decision?.action==="Clean"){
+        for(let k=0;k<6;k++){
+          const a=time*.004+k*TAU/6;
+          const x=px+playerWidth*.50*Math.cos(a),y=py+playerWidth*.23*Math.sin(a);
+          line(g,x-2,y,x+2,y,"#f9fff0",1.6);line(g,x,y-2,x,y+2,"#f9fff0",1.5);
+        }
+      }
+      const anim=s.phase==="move"?time*.009:time*.0025;
+      drawSprite(g,d,s.characterIndex,px,py-playerWidth*.14,bodyScale,anim,view.face,cache);
+    }
+    overview(g,s,d,view,cache);
+    return {x:px,y:py-playerWidth*(view.perspectiveStage?1.04:.94)};
+  }
+
+  const views=new WeakMap();
+  function currentView(canvas,state){
+    if(!state)return null;
+    const bounds=canvas.getBoundingClientRect(),previous=views.get(canvas);
+    if(previous && previous.state===state && previous.seed===state.levelSeed &&
+        Math.abs(previous.width-bounds.width)<1 && Math.abs(previous.height-bounds.height)<1)return previous;
+    if(bounds.width<1||bounds.height<1)return null;
+    return {view:projection(state,designs[state.designIndex],bounds.width,bounds.height),width:bounds.width,height:bounds.height};
+  }
+  function insideMini(mini,x,y){return mini&&x>=mini.x&&y>=mini.y&&x<mini.x+mini.side&&y<mini.y+mini.side;}
+
+  // Pointers are canvas-local CSS pixels. Convert once even when pixel-art uses a smaller backing canvas.
+  function cellAt(canvas,state,x,y){
+    const data=currentView(canvas,state);
+    if(!data || !Number.isFinite(x)||!Number.isFinite(y))return null;
+    const {view,width,height}=data;
+    x*=view.w/width;y*=view.h/height;
+    if(x<0||x>=view.w||y<0||y>=view.h)return null;
+    const mini=view.mini;
+    if(insideMini(mini,x,y)){
+      return Math.floor((y-mini.y)*state.size/mini.side)*state.size+Math.floor((x-mini.x)*state.size/mini.side);
+    }
+    if(!view.within(x,y))return null;
+    const [c,r]=view.world(x,y), col=Math.round(c),row=Math.round(r);
+    if(row<0||row>=state.size||col<0||col>=state.size)return null;
+    return row*state.size+col;
+  }
+  function cellPoint(canvas,state,id){
+    const data=currentView(canvas,state);
+    if(!data || !Number.isInteger(id)||id<0||id>=state.size**2)return null;
+    const {view,width,height}=data,col=id%state.size,row=Math.floor(id/state.size);
+    let [x,y]=view.point(col,row);
+    const mini=view.mini;
+    if(mini && (row<view.minRow||row>view.maxRow||!view.within(x,y)||insideMini(mini,x,y))){
+      x=mini.x+(col+.5)*mini.side/state.size;y=mini.y+(row+.5)*mini.side/state.size;
+    }
+    return {x:x*width/view.w,y:y*height/view.h};
+  }
+
+  function draw(canvas,state,options={}){
+    if(!canvas)return null;
+    const gallery=options.preview||!state, d=designs[(gallery?options.designIndex:state.designIndex)??0];
+    const bounds=canvas.getBoundingClientRect(),cssW=bounds.width,cssH=bounds.height;
+    if(cssW<1||cssH<1)return null;
+    const deviceScale=Math.min(root.devicePixelRatio||1,2);
+    const width=Math.max(1,Math.round(cssW*deviceScale)),height=Math.max(1,Math.round(cssH*deviceScale));
+    if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
+    const pixel=d.mode===1,f=pixel?Math.min(1,350/cssW,260/cssH):1;
+    const w=Math.max(1,Math.round(cssW*f)),h=Math.max(1,Math.round(cssH*f));
+    const cacheId=[d.id,w,h,gallery,gallery?0:state.levelSeed].join("/");
+    let cache=memory.get(canvas);
+    if(cache?.id!==cacheId){
+      const backdrop=stage(w,h);
+      sceneBackdrop(backdrop.getContext("2d"),d,w,h,gallery);
+      cache={id:cacheId,backdrop,frame:pixel?stage(w,h):null,dust:new Map(),fixtures:new Map()};
+      if(!gallery) {
+        cache.floorLayer=stage(w,h);
+        cache.floors=floorAtlas(d);
+      }
+      memory.set(canvas,cache);
+    }
+    const output=canvas.getContext("2d"),g=pixel?cache.frame.getContext("2d"):output;
+    g.setTransform(pixel?1:width/w,0,0,pixel?1:height/h,0,0);g.imageSmoothingEnabled=!pixel;
+    const t=options.motion===false?0:options.time??0;
+    let anchor;
+    if(gallery){
+      g.drawImage(cache.backdrop,0,0,w,h);
+      const index=options.characterIndex??0,scale=Math.min(w/245,h/192);
+      drawSprite(g,d,index,w*.39,h*(d.mode===2?.84:.79),scale,t*.003,1,cache);
+    }else{
+      anchor=drawField(g,state,d,cache,w,h,t,options);
+      views.set(canvas,{view:cache.view,width:cssW,height:cssH,state,seed:state.levelSeed});
+    }
+    if(gallery)ambient(g,d,w,h,t);
+    if(pixel){
+      output.setTransform(1,0,0,1,0,0);output.imageSmoothingEnabled=false;
+      output.drawImage(cache.frame,0,0,width,height);
+    }
+    return anchor?{robot:{x:anchor.x*cssW/w,y:anchor.y*cssH/h}}:null;
+  }
+
+  root.GameArt=Object.freeze({designs,characters,draw,cellAt,cellPoint});
+})(globalThis);
+
+</script>
+  <script>
+/* UI for the live campaign and the field-guide gallery. */
+(() => {
+  "use strict";
+
+  const el = id => document.getElementById(id);
+  const write = (id, value) => { el(id).textContent = value; };
+  const pad = value => String(value).padStart(2, "0");
+  const signed = value => value > 0 ? "+" + value : String(value);
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const soundButtons = ["menu-sound", "play-sound", "pause-sound"].map(el);
+  const tiers = ["Easy", "Moderate", "Challenging", "Hard", "Expert"];
+  const durations = {plan:520, move:240, scan:550, sensor:1700, bayes:4200, decision:1900, result:1700, between:1500};
+  const phases = {
+    select:"Choose a tile", plan:"Planning the route", move:"On the way", scan:"Taking a sample",
+    sensor:"Sensor reading", bayes:"Updating the belief", decision:"Choosing an action", result:"Inspection complete",
+    between:"Location complete", complete:"Campaign complete"
+  };
+  let hoverCell = null;
+  let keyboardCell = null;
+  let lastBubblePosition = "";
+  let state = null;
+  let gallery = 0;
+  let journal = [];
+  let speed = Number(el("speed").value);
+  let elapsed = 0;
+  let lastTime = 0;
+  let artTime = 0;
+  let galleryTime = 0;
+  let lastDraw = -Infinity;
+  let redraw = true;
+  let moveFrom = null;
+  let moveAt = 0;
+  let audio;
+  let master;
+  let lastFootstep = -Infinity;
+  let soundOn = true;
+  try { soundOn = localStorage.getItem("dustbound-sound") !== "off"; } catch { /* Local files may disallow storage. */ }
+
+  const sensorHelp = {
+    verified: "Reads the floor exactly. A dirty tile always gives a positive reading.",
+    simulated: "Course model. It detects 80% of dirty tiles and signals on 20% of clean tiles. You can recheck a missed patch.",
+    positive: "Classroom demo. Every sample gives a positive reading for the course formula.",
+    negative: "Classroom demo. Every sample gives a negative reading. Switch modes to remove dirt."
+  };
+  function sensorName(mode) {
+    return Array.from(el("sensor-mode").options).find(option => option.value === mode).text;
+  }
+
+  function syncSound() {
+    for (const button of soundButtons) {
+      button.setAttribute("aria-pressed", String(soundOn));
+      button.textContent = soundOn ? "Sound on" : "Sound off";
+    }
+    if (master) master.gain.setTargetAtTime(soundOn ? 0.23 : 0, audio.currentTime, 0.015);
+  }
+
+  function unlockAudio() {
+    if (!soundOn) return;
+    const Audio = window.AudioContext || window.webkitAudioContext;
+    if (!Audio) return;
+    try {
+      if (!audio) {
+        audio = new Audio();
+        master = audio.createGain();
+        master.gain.value = 0.23;
+        master.connect(audio.destination);
+      }
+      if (audio.state !== "running") audio.resume().catch(() => {});
+    } catch { /* Silent play remains available if the device has no audio output. */ }
+  }
+
+  function note(start, length, from, to, wave, volume) {
+    const osc = audio.createOscillator();
+    const gain = audio.createGain();
+    osc.type = wave;
+    osc.frequency.setValueAtTime(from, start);
+    osc.frequency.exponentialRampToValueAtTime(to, start + length);
+    gain.gain.setValueAtTime(0.001, start);
+    gain.gain.exponentialRampToValueAtTime(volume, start + Math.min(length / 4, 0.012));
+    gain.gain.exponentialRampToValueAtTime(0.001, start + length);
+    osc.connect(gain);
+    gain.connect(master);
+    osc.onended = () => { osc.disconnect(); gain.disconnect(); };
+    osc.start(start);
+    osc.stop(start + length + 0.005);
+  }
+
+  function brush(start) {
+    const length = 0.23;
+    const buffer = audio.createBuffer(1, Math.ceil(audio.sampleRate * length), audio.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    const noise = audio.createBufferSource();
+    const filter = audio.createBiquadFilter();
+    const gain = audio.createGain();
+    noise.buffer = buffer;
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(1750, start);
+    filter.frequency.exponentialRampToValueAtTime(430, start + length);
+    gain.gain.setValueAtTime(0.001, start);
+    gain.gain.exponentialRampToValueAtTime(0.57, start + 0.035);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + length);
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(master);
+    noise.onended = () => { noise.disconnect(); filter.disconnect(); gain.disconnect(); };
+    noise.start(start);
+  }
+
+  function sound(cue) {
+    if (!soundOn || !audio || audio.state === "closed") return;
+    const now = audio.currentTime + 0.015;
+    const color = ["triangle", "square", "sine", "triangle"][state?.themeIndex ?? 0];
+    if (cue === "step") {
+      if (now - lastFootstep < 0.14) return;
+      lastFootstep = now;
+      note(now, 0.035, (state.moves % 2 ? 154 : 138), 78, "triangle", 0.14);
+    } else if (cue === "scan") {
+      note(now, 0.09, 470, 680, "sine", 0.42);
+      note(now + 0.11, 0.12, 680, 820, "sine", 0.31);
+    } else if (cue === "clean") {
+      brush(now);
+      note(now + 0.12, 0.14, 390, 440, color, 0.20);
+    } else if (cue === "skip") {
+      note(now, 0.14, 340, 210, "triangle", 0.30);
+    } else if (cue === "level" || cue === "finish") {
+      const pitches = cue === "finish" ? [392, 494, 587, 784] : [330, 415, 494];
+      pitches.forEach((pitch, i) => note(now + i * 0.085, 0.18, pitch, pitch, color, 0.23));
+    } else {
+      note(now, 0.065, 330, 440, "sine", 0.28);
+    }
+  }
+
+  for (const button of soundButtons) button.addEventListener("click", () => {
+    soundOn = !soundOn;
+    try { localStorage.setItem("dustbound-sound", soundOn ? "on" : "off"); } catch {}
+    unlockAudio();
+    syncSound();
+    sound("menu");
+  });
+
+  function prepareMenu() {
+    for (const option of el("sensor-mode").options) el("live-sensor-mode").add(option.cloneNode(true));
+    el("sensor-mode").onchange = () => write("sensor-hint", sensorHelp[el("sensor-mode").value]);
+    el("sensor-mode").onchange();
+    const cast = el("character-choice");
+    cast.add(new Option("Random each level", "random"));
+    GameArt.characters.forEach((c, i) => cast.add(new Option(c.name + " · " + c.kind, String(i))));
+    try { cast.value = localStorage.getItem("dustbound-character") || "0"; } catch { cast.value = "0"; }
+    if (!cast.value) cast.value = "0";
+    cast.onchange = () => {
+      try { localStorage.setItem("dustbound-character", cast.value); } catch {}
+      redraw = true;
+    };
+    const list = el("first-location");
+    list.add(new Option("Random location", "random"));
+    for (const style of new Set(GameArt.designs.map(d => d.style))) {
+      const group = document.createElement("optgroup");
+      group.label = style;
+      for (const d of GameArt.designs.filter(d => d.style === style)) group.append(new Option(d.name, d.id));
+      list.append(group);
+    }
+    list.onchange = () => {
+      if (list.value !== "random") gallery = Number(list.value);
+      updateGallery();
+    };
+  }
+
+  function updateGallery() {
+    const design = GameArt.designs[gallery];
+    write("plate-index", "Location " + String(gallery + 1).padStart(3, "0") + " / " + GameArt.designs.length);
+    write("plate-name", design.name);
+    write("plate-style", design.style);
+    el("preview-canvas").setAttribute("aria-label", design.name + ", " + design.style);
+    redraw = true;
+  }
+
+  function turnPlate(direction) {
+    gallery = (gallery + direction + GameArt.designs.length) % GameArt.designs.length;
+    el("first-location").value = String(gallery);
+    unlockAudio();
+    sound("menu");
+    updateGallery();
+  }
+
+  function coord(cell) {
+    return "(" + Math.floor(cell / state.size) + ", " + cell % state.size + ")";
+  }
+
+  function tileName(cell) {
+    if (state.walls[cell]) return Locations.fixtureAt(state.designIndex, cell, state.size).name + " · obstacle";
+    return state.truth[cell] ? "Dust patch" : "Clear floor";
+  }
+
+  function patches(count) {
+    return count + (count === 1 ? " dust patch" : " dust patches");
+  }
+
+  function addEvent(text) {
+    journal.unshift(text);
+    if (journal.length > 8) journal.pop();
+    el("journal").replaceChildren(...journal.map(event => {
+      const item = document.createElement("li");
+      item.textContent = event;
+      return item;
+    }));
+  }
+
+  function beginJournal() {
+    journal = [];
+    addEvent("Level " + state.level + " opened with " + patches(state.dirtTotal) + ".");
+    hoverCell = keyboardCell = null;
+    addEvent(sensorName(state.sensorMode) + ".");
+  }
+
+  function calculation(r) {
+    const first = r.positive ? r.sensitivity : 1 - r.sensitivity;
+    const second = r.positive ? r.falsePositive : 1 - r.falsePositive;
+    return "(" + first.toFixed(1) + " × " + r.prior.toFixed(1) + ") / (" + first.toFixed(1) + " × " +
+      r.prior.toFixed(1) + " + " + second.toFixed(1) + " × " + (1-r.prior).toFixed(1) + ")\n= " +
+      r.numerator.toFixed(2) + " / " + r.evidence.toFixed(2) + " = " + r.posterior.toFixed(7);
+  }
+
+  function setBubble() {
+    const {phase, signal, reading, decision} = state;
+    const box = el("robot-bubble");
+    box.hidden = !["scan","sensor","bayes","decision","result"].includes(phase);
+    if (box.hidden) return;
+    let label, title, detail = "";
+    if (phase === "scan") {
+      label = "Dirt sensor"; title = "Scanning…";
+    } else if (phase === "sensor") {
+      label = sensorName(state.sensorMode);
+      title = signal ? "Dirt detected" : "No dirt detected";
+      detail = (signal ? "Positive" : "Negative") + " reading at " + coord(state.position);
+    } else if (phase === "bayes") {
+      label = "Bayesian update"; title = "P(dirt | " + (signal ? "positive" : "negative") + ")";
+      detail = calculation(reading);
+    } else {
+      const clean = decision.action === "Clean";
+      label = phase === "decision" ? "One-step MDP" : "Action complete";
+      title = phase === "decision" ? (clean ? "✓ Clean" : "✕ Move On")
+        : (clean ? (decision.before === "Dirty" ? "✓ Dust removed" : "✓ Already clean")
+          : (decision.before === "Dirty" ? "✕ Dust remains" : "✕ Left clean"));
+      detail = phase === "decision"
+        ? "Q(Clean) " + signed(decision.cleanQ.toFixed(2)) + " · Q(Move On) " + signed(decision.moveQ.toFixed(2))
+        : decision.before + " → " + decision.after + "  ·  reward " + signed(decision.reward);
+    }
+    box.dataset.tone = decision && (phase === "result" || phase === "decision")
+      ? (decision.action === "Clean" ? "clean" : "skip") : phase;
+    write("bubble-label", label); write("bubble-title", title); write("bubble-math", detail);
+    lastBubblePosition = "";
+  }
+
+  function positionBubble(anchor) {
+    const box = el("robot-bubble");
+    if (box.hidden || !anchor) return;
+    const field = el("game-canvas");
+    const width = box.offsetWidth, height = box.offsetHeight, leftMargin = 5;
+    const x = Math.max(leftMargin, Math.min(field.clientWidth-width-leftMargin, anchor.x-width/2));
+    const below = anchor.y < height + 13;
+    const y = Math.max(3, Math.min(field.clientHeight-height-4, below ? anchor.y+15 : anchor.y-height-10));
+    const key = [Math.round(x),Math.round(y),Math.round(anchor.x-x),below].join("/");
+    if (lastBubblePosition === key) return;
+    lastBubblePosition = key;
+    box.style.left = Math.round(x) + "px"; box.style.top = Math.round(y) + "px";
+    box.style.setProperty("--pointer", Math.min(width-12,Math.max(10,anchor.x-x)) + "px");
+    box.classList.toggle("below", below);
+  }
+
+  function updateInfo() {
+    const s = state, d = GameArt.designs[s.designIndex], c = GameArt.characters[s.characterIndex];
+    const tier = tiers[Math.floor((s.level - 1) / 6)], finish = s.phase === "complete";
+    write("level-number", pad(s.level)); write("stage-title", d.name);
+    write("stage-description", [tier, s.type, s.size+" × "+s.size, d.style].join(" · "));
+    write("character-name", c.name+" · "+c.kind);
+    if (el("dirt-remaining").textContent !== String(s.dirtRemaining)) write("dirt-remaining", s.dirtRemaining);
+    if (el("dirt-total").textContent !== String(s.dirtTotal)) write("dirt-total", s.dirtTotal);
+    el("clean-progress").max = s.dirtTotal;
+    el("clean-progress").value = s.dirtTotal - s.dirtRemaining;
+    write("checked", s.inspected); write("moves", s.moves); write("score", signed(s.score));
+    write("task", phases[s.phase]);
+    let detail = s.targetCell === null ? "Point to a patch to send " + c.name + " there. You can check clear floor, too."
+      : "Inspecting tile " + coord(s.targetCell) + ".";
+    if (s.phase === "move") detail += " · "+(s.route.length-1-s.routeIndex)+" moves left.";
+    if (s.phase === "result" && s.decision.before === "Dirty" && s.decision.after === "Dirty")
+      detail = "The dust is still here. Inspect this tile again or switch inspection modes.";
+    if (s.phase === "between") detail = "The floor is clean. Preparing the next location.";
+    if (finish) detail = patches(s.totalCleaned) + " removed across 30 locations.";
+    write("task-detail", detail);
+    write("map-directions", s.phase === "select" ? "Tap a tile to inspect it." : s.targetCell !== null && !finish && s.phase !== "between" ? "Selected tile " + coord(s.targetCell) : "Floor cleared");
+    const board = el("game-canvas");
+    board.dataset.phase = s.phase;
+    board.setAttribute("aria-label",c.name+" at "+coord(s.position)+". "+phases[s.phase]+". "+detail+" Use arrow keys and Enter to select.");
+    el("open-map").disabled = s.phase !== "select";
+    el("live-sensor-mode").value = s.sensorMode;
+    el("live-sensor-mode").disabled = s.phase !== "select";
+    write("live-sensor-hint", sensorHelp[s.sensorMode]);
+    write("path-note", s.route.length ? coord(s.route[0])+" → "+coord(s.route.at(-1))+" · "+(s.route.length-1)+" moves on a shortest four-neighbour path." : "Select a cell to calculate a route.");
+    const observed = s.reading;
+    const sensitivity = observed ? observed.sensitivity : s.sensorMode === "verified" ? 1 : 0.8;
+    const falsePositive = observed ? observed.falsePositive : s.sensorMode === "verified" ? 0 : 0.2;
+    const model = "Prior 0.30 · sensitivity " + sensitivity.toFixed(2) + " · false-positive rate " + falsePositive.toFixed(2) + ".";
+    write("bayes-note", (observed ? "Last sample · " : "") + model + (observed ? "\n" + (observed.positive?"Positive":"Negative")+" reading.\n"+calculation(observed) : ""));
+    let policy = "Dirty: Clean +10, Move On −8.\nClean: Clean −4, Move On +2.";
+    if (s.decision) {
+      policy += "\nQ(Clean) = "+s.decision.cleanQ.toFixed(4)+"; Q(Move On) = "+s.decision.moveQ.toFixed(4)+". "+s.decision.action+".";
+      if (s.decision.after) policy += " "+s.decision.before+" → "+s.decision.after+" ("+signed(s.decision.reward)+").";
+    }
+    write("policy-note", policy);
+    el("arrival").hidden = !finish && s.phase !== "between";
+    if (!el("arrival").hidden) {
+      write("arrival-kicker",finish?"Campaign complete":"Location complete");
+      write("arrival-title",finish?"All 30 floors clean":"On to level "+pad(s.level+1));
+      write("arrival-note",finish?patches(s.totalCleaned)+" removed · Score "+signed(s.score):patches(s.dirtTotal)+" removed.");
+    }
+    el("pause-game").disabled = finish; el("finish-menu").hidden = !finish;
+    setBubble(); redraw = true;
+  }
+
+  function advance() {
+    const before = state.phase, from = state.position;
+    Engine.tick(state);
+    switch (state.phase) {
+      case "move":
+      case "scan":
+        if (before === "move") { moveFrom = from; moveAt = artTime; sound("step"); }
+        break;
+      case "sensor":
+        addEvent((state.signal?"Positive":"Negative")+" sensor reading at "+coord(state.position)+".");
+        sound("scan"); break;
+      case "bayes":
+        addEvent("Bayes: P(dirt | reading) = "+state.reading.posterior.toFixed(7)+"."); break;
+      case "decision":
+        addEvent("MDP chose "+state.decision.action+" after comparing the two expected rewards."); break;
+      case "result": {
+        const q = state.decision;
+        const scoring = q.scoreDelta === q.reward ? "" : " Rechecking clear floor adds no points.";
+        addEvent(q.action+" at "+coord(state.position)+" · "+q.before+" → "+q.after+" · reward "+signed(q.reward)+"."+scoring);
+        sound(q.action==="Clean"?"clean":"skip"); break;
+      }
+      case "select":
+        moveFrom = null;
+        if (before === "between") { beginJournal(); sound("level"); }
+        break;
+      case "complete": sound("finish"); break;
+    }
+    updateInfo();
+  }
+
+  function dispatch(cell) {
+    if (!state || state.paused || state.phase !== "select") return;
+    if (!Engine.selectCell(state,cell)) {
+      write("task-detail",cell==null?"Choose a floor tile inside the map.":state.walls[cell]?"An obstacle blocks that tile. Choose open ground.":"This tile cannot be reached.");
+      return;
+    }
+    unlockAudio(); elapsed = 0; moveFrom = null; hoverCell = keyboardCell = null;
+    board.title = ""; board.style.cursor = "default";
+    addEvent("You selected "+tileName(cell).toLowerCase()+" at "+coord(cell)+". BFS found a shortest route of "+(state.route.length-1)+" moves.");
+    updateInfo();
+  }
+
+  const board = el("game-canvas");
+  function pointedCell(event) {
+    const rect = board.getBoundingClientRect();
+    return GameArt.cellAt(board,state,event.clientX-rect.left,event.clientY-rect.top);
+  }
+  board.addEventListener("pointermove",e=>{
+    if (!state || state.phase!=="select" || state.paused) return;
+    const id = pointedCell(e);
+    hoverCell = Engine.canSelect(state,id)?id:null;
+    let tip = "";
+    if (id !== null && Number.isInteger(id)) {
+      tip = tileName(id) + " " + coord(id) + (state.walls[id] ? "" : " · click to inspect");
+    }
+    board.title = tip;
+    board.style.cursor = hoverCell===null?"default":"crosshair"; redraw = true;
+  });
+  board.addEventListener("pointerleave",()=>{hoverCell=null; board.title=""; redraw=true;});
+  board.addEventListener("click",e=>{if (state) dispatch(pointedCell(e));});
+  board.addEventListener("keydown",e=>{
+    if (!state || state.paused || state.phase!=="select") return;
+    const direction = {ArrowLeft:[0,-1],ArrowRight:[0,1],ArrowUp:[-1,0],ArrowDown:[1,0]}[e.key];
+    if (direction) {
+      e.preventDefault();
+      const n=state.size, current=keyboardCell??state.position;
+      const clamp=v=>Math.max(0,Math.min(n-1,v));
+      keyboardCell=clamp(Math.floor(current/n)+direction[0])*n+clamp(current%n+direction[1]);
+      hoverCell=keyboardCell; write("task-detail",tileName(keyboardCell)+" "+coord(keyboardCell)+" · Enter to inspect."); redraw=true;
+    } else if(e.key==="Enter"){e.preventDefault();dispatch(keyboardCell??state.position);}
+  });
+
+  const floorDialog = el("floor-dialog");
+  const plan = el("plan-canvas");
+  const rowInput = el("plan-row"), colInput = el("plan-col");
+
+  function selectedCoordinate() {
+    const row = rowInput.valueAsNumber, col = colInput.valueAsNumber;
+    if (!Number.isInteger(row) || !Number.isInteger(col) || row < 0 || col < 0 || row >= state.size || col >= state.size) return null;
+    return row * state.size + col;
+  }
+
+  function drawFloorPlan(cell) {
+    const n = state.size;
+    const side = Math.max(n, Math.round(plan.clientWidth * Math.min(window.devicePixelRatio || 1, 2)));
+    plan.width = plan.height = side;
+    const ctx = plan.getContext("2d");
+    const tile = side / n;
+    ctx.fillStyle = "#f1e9d2";
+    ctx.fillRect(0, 0, side, side);
+    ctx.fillStyle = "#747e67";
+    for (let id = 0; id < state.walls.length; id++) {
+      if (state.walls[id]) ctx.fillRect(Math.floor(id % n * tile), Math.floor(Math.floor(id / n) * tile), Math.ceil(tile), Math.ceil(tile));
+    }
+    if (n <= 20) {
+      ctx.strokeStyle = "#81786042";
+      ctx.lineWidth = Math.max(1, side / 650);
+      ctx.beginPath();
+      for (let k = 1; k < n; k++) {
+        ctx.moveTo(k * tile, 0); ctx.lineTo(k * tile, side);
+        ctx.moveTo(0, k * tile); ctx.lineTo(side, k * tile);
+      }
+      ctx.stroke();
+    }
+    function mark(id, kind) {
+      const x = (id % n + 0.5) * tile, y = (Math.floor(id / n) + 0.5) * tile;
+      const radius = Math.max(side / 150, tile * 0.25);
+      ctx.beginPath();
+      if (kind === "dust") {
+        ctx.fillStyle = "#a3421a";
+        ctx.moveTo(x, y - radius); ctx.lineTo(x + radius, y); ctx.lineTo(x, y + radius); ctx.lineTo(x - radius, y); ctx.closePath(); ctx.fill();
+      } else if (kind === "robot") {
+        ctx.strokeStyle = "#175762"; ctx.lineWidth = Math.max(side / 220, tile * 0.09);
+        ctx.arc(x, y, radius * 1.4, 0, Math.PI * 2); ctx.stroke();
+      } else {
+        const half = Math.max(side / 100, tile * 0.45);
+        ctx.lineWidth = Math.max(2, side / 200); ctx.strokeStyle = "#fffefa";
+        ctx.rect(x - half, y - half, half * 2, half * 2); ctx.stroke();
+        ctx.lineWidth = Math.max(1, side / 470); ctx.strokeStyle = "#282f28"; ctx.stroke();
+      }
+    }
+    for (let id = 0; id < state.truth.length; id++) if (state.truth[id]) mark(id, "dust");
+    mark(state.position, "robot");
+    if (cell !== null) mark(cell, "selection");
+  }
+
+  function updatePlan() {
+    const cell = selectedCoordinate();
+    write("plan-cell", cell === null ? "Choose a row and column from 0 to " + (state.size - 1) + "." :
+      tileName(cell) + " " + coord(cell) + (state.checked[cell] ? " · previously inspected" : ""));
+    el("inspect-coordinate").disabled = !Engine.canSelect(state, cell);
+    el("plan-patches").value = cell !== null && state.truth[cell] ? String(cell) : "";
+    drawFloorPlan(cell);
+  }
+
+  function pointOnPlan(cell) {
+    rowInput.value = Math.floor(cell / state.size);
+    colInput.value = cell % state.size;
+    updatePlan();
+  }
+
+  el("open-map").onclick = () => {
+    if (state.phase !== "select" || state.paused) return;
+    rowInput.max = colInput.max = state.size - 1;
+    write("floor-place", GameArt.designs[state.designIndex].name + " · " + state.size + " × " + state.size);
+    const choices = el("plan-patches");
+    choices.replaceChildren(new Option("Choose a patch…", ""));
+    for (let cell = 0; cell < state.truth.length; cell++) {
+      if (state.truth[cell]) choices.add(new Option("Row " + Math.floor(cell / state.size) + ", column " + cell % state.size, String(cell)));
+    }
+    floorDialog.showModal();
+    pointOnPlan(keyboardCell ?? state.position);
+  };
+  plan.addEventListener("click", event => {
+    const rect = plan.getBoundingClientRect();
+    const row = Math.floor((event.clientY - rect.top) / rect.height * state.size);
+    const col = Math.floor((event.clientX - rect.left) / rect.width * state.size);
+    if (row >= 0 && col >= 0 && row < state.size && col < state.size) pointOnPlan(row * state.size + col);
+  });
+  rowInput.oninput = colInput.oninput = updatePlan;
+  el("plan-patches").onchange = event => { if (event.target.value !== "") pointOnPlan(Number(event.target.value)); };
+  el("close-map").onclick = () => floorDialog.close();
+  el("plan-form").onsubmit = event => {
+    event.preventDefault();
+    const cell = selectedCoordinate();
+    if (!Engine.canSelect(state, cell)) return;
+    floorDialog.close();
+    dispatch(cell);
+    board.focus({preventScroll:true});
+  };
+
+  function view(showGame) {
+    el("menu").hidden = showGame;
+    el("play").hidden = !showGame;
+    el("continue-run").hidden = !state || state.phase === "complete";
+    el("start-run").firstChild.textContent = state && state.phase !== "complete" ? "Start new campaign " : "Start campaign ";
+    redraw = true;
+    window.scrollTo(0, 0);
+  }
+
+  function newRun() {
+    if (el("new-dialog").open) el("new-dialog").close();
+    unlockAudio();
+    state = Engine.create({size: el("map-size").value, character: el("character-choice").value, firstDesign: el("first-location").value, sensorMode: el("sensor-mode").value});
+    elapsed = 0;
+    moveFrom = null;
+    beginJournal();
+    view(true);
+    updateInfo();
+    sound("level");
+    el("pause-game").focus({preventScroll:true});
+  }
+
+  function pause() {
+    if (!state || state.paused || state.phase === "complete" || el("play").hidden) return;
+    Engine.pause(state);
+    if (master) master.gain.setTargetAtTime(0, audio.currentTime, 0.015);
+    write("pause-level", "Level " + pad(state.level));
+    write("pause-line", GameArt.designs[state.designIndex].name + " · " + patches(state.dirtRemaining) + " left.");
+    el("pause-dialog").showModal();
+    redraw = true;
+  }
+
+  function resume() {
+    if (el("pause-dialog").open) el("pause-dialog").close();
+    unlockAudio();
+    syncSound();
+    Engine.resume(state);
+    view(true);
+    updateInfo();
+    el("pause-game").focus({preventScroll:true});
+  }
+
+  el("prev-design").onclick = () => turnPlate(-1);
+  el("next-design").onclick = () => turnPlate(1);
+  el("map-size").onchange = () => {
+    const size = el("map-size").value;
+    write("size-hint", size === "random" ? "Each level draws a new size from 5 × 5 to 100 × 100." : "Every level uses a " + size + " × " + size + " map. The layout changes each time.");
+  };
+  el("start-run").onclick = () => {
+    if (state && state.phase !== "complete") el("new-dialog").showModal();
+    else newRun();
+  };
+  el("confirm-new").onclick = newRun;
+  el("cancel-new").onclick = () => el("new-dialog").close();
+  el("pause-game").onclick = pause;
+  el("resume-game").onclick = resume;
+  el("continue-run").onclick = resume;
+  el("pause-dialog").oncancel = event => { event.preventDefault(); resume(); };
+  el("restart-level").onclick = () => {
+    Engine.restartLevel(state);
+    elapsed = 0;
+    moveFrom = null;
+    beginJournal();
+    resume();
+  };
+  el("to-menu").onclick = () => {
+    el("pause-dialog").close();
+    view(false);
+    syncSound();
+    el("continue-run").focus({preventScroll:true});
+  };
+  el("finish-menu").onclick = () => { view(false); el("start-run").focus({preventScroll:true}); };
+  el("speed").onchange = () => { speed = Number(el("speed").value); };
+  el("live-sensor-mode").onchange = event => {
+    if (Engine.setSensorMode(state, event.target.value)) addEvent("Inspection mode changed to " + sensorName(state.sensorMode) + ".");
+    updateInfo();
+  };
+  document.addEventListener("keydown", event => {
+    if (event.repeat || el("play").hidden || el("pause-dialog").open || floorDialog.open || !state || state.phase === "complete") return;
+    if (event.key === "Escape" || (event.code === "Space" && !event.target.closest("select, button, summary, input"))) {
+      event.preventDefault();
+      pause();
+    }
+  });
+  window.addEventListener("resize", () => {
+    redraw = true;
+    if (floorDialog.open) updatePlan();
+  });
+  reduceMotion.addEventListener("change", () => { redraw = true; });
+
+  function frame(time) {
+    const delta = lastTime ? Math.min(100, time - lastTime) : 0;
+    lastTime = time;
+    const inGame = !el("play").hidden;
+    const active = inGame && !state.paused && state.phase !== "complete";
+    if (!document.hidden) {
+      if (!inGame) galleryTime += delta;
+      if (active) artTime += delta;
+      if (active && state.phase !== "select") {
+        const educational = ["sensor","bayes","decision","result"].includes(state.phase);
+        elapsed += delta * (educational ? Math.min(speed,1.5) : speed);
+        if (elapsed >= durations[state.phase]) {
+          elapsed = 0;
+          advance();
+        }
+      }
+      const animated = !reduceMotion.matches && (!inGame || active);
+      if (redraw || (animated && time - lastDraw >= 1000 / 30)) {
+        if (inGame) {
+          const frameInfo = GameArt.draw(el("game-canvas"), state, {
+            time: artTime, motion: !reduceMotion.matches, moveFrom, hoverCell,
+            moveProgress: Math.min(1, (artTime - moveAt) / Math.max(32, 190 / speed))
+          });
+          positionBubble(frameInfo?.robot);
+        } else {
+          GameArt.draw(el("preview-canvas"), null, {
+            time: galleryTime, motion: !reduceMotion.matches, preview: true,
+            designIndex: gallery, characterIndex: el("character-choice").value === "random" ? gallery % GameArt.characters.length : Number(el("character-choice").value)
+          });
+        }
+        redraw = false;
+        lastDraw = time;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  prepareMenu();
+  syncSound();
+  updateGallery();
+  requestAnimationFrame(frame);
+})();
+
+</script>
+</body>
+</html>
